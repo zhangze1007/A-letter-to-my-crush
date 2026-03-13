@@ -19,22 +19,6 @@
       cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E🌸%3C/text%3E%3C/svg%3E") 12 12, auto;
     }
     #petal-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-    #confetti-stage { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
-
-    /* ── Music Button ── */
-    #music-btn {
-      position: fixed; top: 1.2rem; right: 1.2rem; z-index: 100;
-      width: 48px; height: 48px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--rose), #c04060);
-      border: none; cursor: pointer;
-      box-shadow: 0 4px 20px rgba(232,102,122,0.45);
-      font-size: 1.3rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s;
-    }
-    #music-btn:hover { transform: scale(1.12); }
-    #music-btn.playing { animation: spinBtn 4s linear infinite; }
-    @keyframes spinBtn { to { transform: rotate(360deg); } }
 
     /* ── Hero ── */
     .hero {
@@ -64,19 +48,19 @@
 
     /* ── Envelope Section ── */
     .letter-section {
-      position: relative; z-index: 1; min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 4rem 2rem;
+      position: relative; z-index: 1;
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 5rem 2rem 6rem;
     }
     .envelope-scene {
-      max-width: 680px; width: 100%;
+      max-width: 960px; width: 100%;
       display: flex; flex-direction: column; align-items: center;
       opacity: 0; transform: translateY(40px);
       transition: opacity 0.8s, transform 0.8s;
     }
     .envelope-scene.visible { opacity: 1; transform: translateY(0); }
 
-    /* Closed envelope card */
+    /* Closed envelope — fixed smaller size */
     .env-closed {
       width: 100%; max-width: 520px; position: relative;
       cursor: pointer; user-select: none;
@@ -92,84 +76,68 @@
       transition: opacity 0.4s;
     }
 
-    /* Flap CSS transform */
-    .env-flap-poly {
-      transform-origin: 50% 0%;
-      transform-box: fill-box;
-      transition: transform 0.8s cubic-bezier(0.4,0,0.2,1);
-    }
-    .flap-open .env-flap-poly { transform: rotateX(180deg); }
-
-    /* Letter slides up */
+    /* Letter card — wide & airy */
     .letter-card {
-      width: 90%; max-width: 480px;
+      width: 100%; max-width: 860px;
       background: linear-gradient(160deg, #fff9fb 60%, #fde8ed 100%);
-      border: 1.5px solid var(--blush); border-radius: 6px;
-      padding: 2.8rem 3rem 3rem; position: relative;
+      border: 1.5px solid var(--blush); border-radius: 12px;
+      padding: 3.5rem 5rem 4rem; position: relative;
       overflow: hidden; max-height: 0; opacity: 0; margin-top: 0;
-      box-shadow: 0 12px 48px rgba(232,102,122,0.12);
+      box-shadow: 0 16px 64px rgba(232,102,122,0.13);
       transition: max-height 0s, opacity 0s, margin-top 0s;
     }
     .letter-card.open {
-      max-height: 4000px; opacity: 1; margin-top: -10px;
-      transition: max-height 1.2s 0.55s ease, opacity 0.7s 0.55s, margin-top 0.6s 0.4s;
+      max-height: 6000px; opacity: 1; margin-top: 2rem;
+      transition: max-height 1.6s 0.55s ease, opacity 0.7s 0.55s, margin-top 0.6s 0.4s;
+    }
+    @media (max-width: 600px) {
+      .letter-card { padding: 2.5rem 2rem 3rem; }
     }
     .letter-card::before {
-      content: ''; position: absolute; top: -1px; left: -1px; right: -1px; height: 5px;
+      content: ''; position: absolute; top: -1px; left: -1px; right: -1px; height: 6px;
       background: linear-gradient(90deg, var(--blush), var(--rose), var(--blush));
-      border-radius: 6px 6px 0 0;
+      border-radius: 12px 12px 0 0;
     }
     .wax-seal {
-      width: 52px; height: 52px; border-radius: 50%;
+      width: 56px; height: 56px; border-radius: 50%;
       background: radial-gradient(circle at 40% 35%, #e8667a, #c04060);
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; margin: 0 auto 2rem;
+      font-size: 1.6rem; margin: 0 auto 2.2rem;
       box-shadow: 0 4px 16px rgba(192,64,96,0.35);
     }
     .letter-date {
-      font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--rose); margin-bottom: 1.4rem; opacity: 0.8; text-align: center;
+      font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 1.6rem; opacity: 0.8; text-align: center;
     }
-    .letter-body { font-size: 1.02rem; line-height: 2; color: #5a2030; }
-    .letter-body p { margin-bottom: 1.2rem; }
-    .letter-body .greeting { font-size: 1.25rem; font-style: italic; margin-bottom: 1.5rem; }
-    .letter-body .sign-off { margin-top: 2rem; font-style: italic; text-align: right; }
-    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--rose); }
+    .letter-body {
+      font-size: 1.06rem; line-height: 2.1; color: #5a2030;
+      max-width: 680px; margin: 0 auto;
+    }
+    .letter-body p { margin-bottom: 1.4rem; }
+    .letter-body .greeting { font-size: 1.3rem; font-style: italic; margin-bottom: 1.8rem; }
+    .letter-body .sign-off { margin-top: 2.5rem; font-style: italic; text-align: right; }
+    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); margin-top: 0.4rem; }
 
-    /* ── Confetti Section ── */
-    .confetti-section {
+    /* ── Tree Section ── */
+    .tree-section {
       position: relative; z-index: 1; min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 4rem 2rem; text-align: center;
+      background: var(--cream);
     }
-    .section-title {
+    #tree-canvas { display: block; border-radius: 20px; box-shadow: 0 8px 48px rgba(232,102,122,0.15); }
+    .rose-text {
+      margin-top: 2.5rem;
       font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      color: var(--rose); margin-bottom: 0.6rem;
+      font-style: italic;
+      color: var(--deep);
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      line-height: 2.2; max-width: 520px;
+      letter-spacing: 0.05em;
+      opacity: 0.85;
     }
-    .section-hint { opacity: 0.6; font-size: 0.95rem; margin-bottom: 2.8rem; }
-
-    .big-heart-btn {
-      width: 130px; height: 130px; border-radius: 50%;
-      background: radial-gradient(circle at 38% 35%, #ff9ab0, #e8667a 50%, #c04060);
-      border: none; cursor: pointer; font-size: 3rem;
-      box-shadow: 0 8px 40px rgba(232,102,122,0.45);
-      display: flex; align-items: center; justify-content: center;
-      animation: heartbeat 1.6s ease infinite;
-      transition: transform 0.1s;
-    }
-    .big-heart-btn:active { transform: scale(0.92) !important; }
-    @keyframes heartbeat {
-      0%,100% { transform: scale(1); } 14% { transform: scale(1.08); }
-      28% { transform: scale(1); } 42% { transform: scale(1.05); } 70% { transform: scale(1); }
-    }
-
-    .c-piece {
-      position: absolute; pointer-events: none; opacity: 0;
-      font-family: 'Lora', Georgia, serif; font-style: italic;
-      white-space: nowrap; border-radius: 4px;
-    }
+    .rose-text em { color: var(--rose); font-size: 1.08em; }
 
     footer {
       position: relative; z-index: 1; text-align: center;
@@ -185,30 +153,15 @@
     @keyframes bounce {
       0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); }
     }
-    @keyframes confettiFly {
-      0%   { opacity: 0; transform: translate(0,0) rotate(var(--r0)) scale(0.4); }
-      12%  { opacity: 1; }
-      85%  { opacity: 0.85; }
-      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r1)) scale(var(--sf)); }
-    }
   </style>
 </head>
 <body>
 
 <canvas id="petal-canvas"></canvas>
-<div id="confetti-stage"></div>
 
-<!-- ─── MUSIC ─── -->
-<button id="music-btn" title="Play / Pause music">🎵</button>
-<!--
-  HOW TO ADD MUSIC:
-  1. Download "Risk It All" by Bruno Mars as an MP3
-  2. Rename the file to: music.mp3
-  3. Put it in the SAME folder as this index.html
-  4. Upload both files to GitHub together
--->
-<audio id="bg-music" loop>
-  <source src="music.mp3" type="audio/mpeg"/>
+<!-- Auto-play BGM (gentle royalty-free romantic piano) via WebAudio -->
+<audio id="bg-music" loop autoplay>
+  <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3" type="audio/mpeg"/>
 </audio>
 
 <!-- ─── HERO ─── -->
@@ -225,17 +178,12 @@
     <div class="env-closed" id="env-closed">
       <svg class="env-svg" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="520" height="300" rx="10" fill="#fde8ed" stroke="#f9c0cc" stroke-width="2"/>
-        <!-- side folds -->
         <polygon points="0,0 0,300 195,172" fill="#fad0d8" opacity="0.55"/>
         <polygon points="520,0 520,300 325,172" fill="#fad0d8" opacity="0.55"/>
-        <!-- bottom fold -->
-      
         <polygon points="0,300 260,162 520,300" fill="#f5b8c8" opacity="0.7"/>
-        <!-- flap (top triangle, animates open) -->
         <polygon class="env-flap-poly" id="flap-poly"
           points="0,2 520,2 260,155"
           fill="#f5b8c8" stroke="#f9c0cc" stroke-width="1.5"/>
-        <!-- wax seal -->
         <circle cx="260" cy="104" r="27" fill="url(#sg)" filter="url(#sh)"/>
         <text x="260" y="112" text-anchor="middle" font-size="24">💌</text>
         <defs>
@@ -259,39 +207,41 @@
         <p class="greeting">亲爱的 Sujuing，</p>
         <p>有些话，说出口总觉得太重，放在心里又太憋屈。所以我把它们藏进了这一行行代码里来表达这段感情。</p>
         <p>我不知道你是否注意过，每当你笑的时候，我都会不自觉地多看一眼。不是因为别的，只是觉得——世界好像在那一刻变得安静了。</p>
-        <p>我总是期待我们之间的偶然,穿着同款颜色的上衣上学。我也总是希望放学后能和你一起走,毕业后才发现，我们未来可能不会再见了了。</p>
-        <p>我第一次看见你的时候,你戴着黑色的口罩,绑着马尾的辫子看着我在前面Public speaking。那一刻,我发现我好像对你心动了。</p>
-        <p>我还记得,那时我唱了一首《喜欢你》,而你是你第一位点赞的,无论是什么理由都让我感到无比欣喜万分。</p>
-        <p>某一天你数日缺席,看见你在noted发了伤心的表情,想了许久我还是决定主动关心下你吧。回想起来,当时的你也许是收到了关于母亲癌症末期的消息。</p>
-        <p>那时候也是我第一次感到无能为力,因为无法帮忙你。不过,你的坚强打动了我,你十分重视友情我也一直都知道。</p>
-        <p>我在一些决定上曾让你感到难过以及失望,我知道我提起一些不该说的事,我也很开心你还是愿意主动祝福我在生日时。</p>
-        <p>每一次你愿意靠近我的瞬间我还记得,你愿意成为Lawatan ke MMU projek的副秘书,主动帮我承担一些事物。</p>
-        <p>我在你是否也对我也有感觉这件事上反复思考,但是我不敢表白。我害怕受伤所以只能偷偷的靠近你。</p>
-        <p>Hari Koku当天借着没事做主动帮你们档口卖咖啡,想着MUET speaking能够去你的班练习,只为了多看你一眼。</p>
-        <p>看着你发的noted 都生动可爱,与线下高冷、淑女的你形成了十分强烈的反差感对比。</p>
-        <p>我们第一组在彩排时,你坐在椅子上安静的看着我所写在白板的故事结构。放学后,你也会来礼堂看我们的表演,虽然最后表演当天我在台上没看见你的身影。</p>
-        <P>其实,我知道你并不喜欢我。这段暗恋其实只是一个人的兵荒马乱,因为我知道如果我不主动找话题,我们之间便是陌生人。</p>
-        <p>谢谢你 在这段时间里对我的包容,我还是喜欢你 只不过少了那份非要在一起的执着。</p>
-        <p>如果可以,我希望时间能够停在Camp我们玩猜谜游戏时,我向着你方向单膝下跪求婚的时刻。(我记得你笑了) </p>
-        <p>如果可以,我希望毕业典礼当天匿名写:"我喜欢你"的人是你。</p>
-        <p>如果可以,我希望能够和你进到同一所大学,我希望我的人生未来里有你在。</p>
-        <p>所以,这个网站是我能想到的最笨、也最真诚的方式,来告诉你：<em>抒均,我喜欢你。</em></p>
+        <p>我总是期待我们之间的偶然，穿着同款颜色的上衣上学。我也总是希望放学后能和你一起走，毕业后才发现，我们未来可能不会再见了。</p>
+        <p>我第一次看见你的时候，你戴着黑色的口罩，绑着马尾的辫子看着我在前面 Public speaking。那一刻，我发现我好像对你心动了。</p>
+        <p>我还记得，那时我唱了一首《喜欢你》，而你是第一位点赞的，无论是什么理由都让我感到无比欣喜万分。</p>
+        <p>某一天你数日缺席，看见你在 noted 发了伤心的表情，想了许久我还是决定主动关心一下你吧。回想起来，当时的你也许是收到了关于母亲癌症末期的消息。</p>
+        <p>那时候也是我第一次感到无能为力，因为无法帮助你。不过，你的坚强打动了我，你十分重视友情我也一直都知道。</p>
+        <p>我在一些决定上曾让你感到难过以及失望，我知道我提起了一些不该说的事，我也很开心你还是愿意主动在我生日时祝福我。</p>
+        <p>每一次你愿意靠近我的瞬间我还记得，你愿意成为 Lawatan ke MMU projek 的副秘书，主动帮我承担一些事务。</p>
+        <p>我在你是否也对我有感觉这件事上反复思考，但是我不敢表白。我害怕受伤所以只能偷偷地靠近你。</p>
+        <p>Hari Koku 当天借着没事做主动帮你们档口卖咖啡，想着 MUET speaking 能够去你的班练习，只为了多看你一眼。</p>
+        <p>看着你发的 noted 都生动可爱，与线下高冷、淑女的你形成了十分强烈的反差感对比。</p>
+        <p>我们第一组在彩排时，你坐在椅子上安静地看着我所写在白板的故事结构。放学后，你也会来礼堂看我们的表演，虽然最后表演当天我在台上没看见你的身影。</p>
+        <p>其实，我知道你并不喜欢我。这段暗恋其实只是一个人的兵荒马乱，因为我知道如果我不主动找话题，我们之间便是陌生人。</p>
+        <p>谢谢你在这段时间里对我的包容，我还是喜欢你，只不过少了那份非要在一起的执着。</p>
+        <p>如果可以，我希望时间能够停在 Camp 我们玩猜谜游戏时，我向着你方向单膝下跪求婚的时刻。（我记得你笑了）</p>
+        <p>如果可以，我希望毕业典礼当天匿名写"我喜欢你"的人是你。</p>
+        <p>如果可以，我希望能够和你进到同一所大学，我希望我的人生未来里有你在。</p>
+        <p>所以，这个网站是我能想到的最笨、也最真诚的方式，来告诉你：<em>抒均，我喜欢你。</em></p>
         <p class="sign-off">
           带着一点紧张，且真心<br/>
-          <span>— 喜欢Sj的男孩纸🌸</span>
+          <span>— 喜欢 Sj 的男孩纸 🌸</span>
         </p>
       </div>
     </div>
 
   </div>
-  
 </section>
 
-<!-- ─── CONFETTI BLESSINGS ─── -->
-<section class="confetti-section">
-  <h2 class="section-title">点击，把祝福送给你 🌸</h2>
-  <p class="section-hint">每一次点击，都是一句我想对你说的悄悄话</p>
-  <button class="big-heart-btn" id="heart-btn">💗</button>
+<!-- ─── 3D TREE ─── -->
+<section class="tree-section">
+  <canvas id="tree-canvas"></canvas>
+  <div class="rose-text">
+    白玫瑰，是<em>纯洁</em>与<em>真挚</em>的象征。<br/>
+    它不张扬，却深沉；不喧嚣，却永恒。<br/>
+    就像某些感情——<em>安静地开着，从未凋谢。</em>
+  </div>
 </section>
 
 <footer>made with 🌸 just for you · 2025</footer>
@@ -325,23 +275,16 @@
   })();
 })();
 
-// ── Music ──
-const musicBtn = document.getElementById('music-btn');
-const audio = document.getElementById('bg-music');
-let playing = false;
-musicBtn.addEventListener('click', () => {
-  if (!playing) {
-    audio.play().then(() => {
-      playing = true;
-      musicBtn.textContent = '🎶';
-      musicBtn.classList.add('playing');
-    }).catch(() => { /* no file yet */ });
-  } else {
-    audio.pause(); playing = false;
-    musicBtn.textContent = '🎵';
-    musicBtn.classList.remove('playing');
-  }
-});
+// ── Auto BGM (browser requires user interaction first) ──
+(function(){
+  const audio = document.getElementById('bg-music');
+  audio.volume = 0.45;
+  // Try autoplay, fallback to first-touch
+  const tryPlay = () => { audio.play().catch(()=>{}); };
+  tryPlay();
+  document.addEventListener('click', tryPlay, { once: true });
+  document.addEventListener('touchstart', tryPlay, { once: true });
+})();
 
 // ── Envelope open ──
 const scene = document.getElementById('envelope-scene');
@@ -353,88 +296,209 @@ let opened = false;
 
 new IntersectionObserver(([e]) => {
   if(e.isIntersecting){ scene.classList.add('visible'); }
-}, { threshold: 0.2 }).observe(scene);
+}, { threshold: 0.15 }).observe(scene);
 
 envClosed.addEventListener('click', () => {
   if (opened) return;
   opened = true;
   envHint.style.opacity = '0';
-  // open flap via SVG CSS
   flapPoly.style.transformOrigin = '50% 0%';
   flapPoly.style.transformBox = 'fill-box';
   flapPoly.style.transition = 'transform 0.8s cubic-bezier(0.4,0,0.2,1)';
   flapPoly.style.transform = 'rotateX(180deg)';
-  // slide letter
   setTimeout(() => letterCard.classList.add('open'), 500);
 });
 
-// ── Confetti blessings ──
-const heartBtn = document.getElementById('heart-btn');
-const stage = document.getElementById('confetti-stage');
+// ── 3D Pink Christmas Tree ──
+(function(){
+  const canvas = document.getElementById('tree-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = Math.min(480, window.innerWidth - 40);
+  const H = Math.min(540, window.innerHeight * 0.72);
+  canvas.width = W; canvas.height = H;
+  const cx = W/2, cy = H*0.52;
+  let angle = 0;
 
-const BLESSINGS = [
-  "天天开心 🌸","保持微笑哦 😊","你笑起来很可爱 💗",
-  "我爱你 ❤️","我喜欢你 💕","你是最棒的 ✨",
-  "被你喜欢真的很幸运 🍀","希望你每天都很好 🌷",
-  "你让我心跳加速 💓","世界因你而温柔 🌙",
-  "你是我的小太阳 ☀️","遇见你真好 💝",
-  "你值得被爱 🌺","永远保持那个笑容 😄",
-  "偷偷喜欢你很久了 🤫","你的眼睛好好看 ✨",
-  "想陪你看很多很多日落 🌅","你不知道你有多特别 💞",
-  "每次看到你都会开心 🥰","希望你健康快乐 💐",
-  "你是我最想分享好消息的人 📱","你笑的时候最好看 🌸",
-  "喜欢你偷偷的样子 🫣","想和你一起去很多地方 🗺️",
-  "你是我心里的小秘密 🔐","被你注意到会开心很久 💗",
-  "你的存在让我有勇气 🦋","好想好想好想你 💌",
-  "你今天也很好看 🪷","我的世界有你就够了 🌍",
-  "你是独一无二的 ⭐","认识你是最好的事 🎀",
-  "你的笑声是我最喜欢的声音 🎶","永远支持你 🫶",
-  "你比你想象的更闪亮 💫","如果可以我想牵你的手 🤝",
-  "你是我最想说晚安的人 🌙","喜欢你是件很甜的事 🍬",
-  "你好，我喜欢你 💐","谢谢你出现在我的世界里 🌈",
-];
+  // Tree points
+  const treePoints = [];
+  for (let i = 0; i < 180; i++) {
+    const t = i / 180;
+    const y = -0.85 + t * 1.6;
+    const radius = t * 0.72;
+    const count = Math.floor(6 + t * 28);
+    for (let j = 0; j < count; j++) {
+      const a = (j / count) * Math.PI * 2 + t * 6 * Math.PI * 2;
+      const r = radius * (0.6 + Math.random() * 0.4);
+      treePoints.push({
+        x: Math.cos(a) * r,
+        y: y + (Math.random()-0.5)*0.06,
+        z: Math.sin(a) * r,
+        size: 1.2 + (1-t)*1.8 + Math.random()*1.2,
+        alpha: 0.5 + Math.random()*0.5,
+        layer: t,
+        // pink hue per point
+        h: Math.floor(Math.random()*30), // 0–30 => pink range
+      });
+    }
+  }
 
-const COLORS = ['#e8667a','#c04060','#d4a96a','#9ab8d4','#b89ad4','#7ac4a8','#e8a87c','#e87070'];
+  // Floating dust
+  const dust = [];
+  for (let i = 0; i < 240; i++) {
+    const t = Math.random();
+    const a = Math.random()*Math.PI*2;
+    const r = 0.4 + Math.random()*1.0;
+    dust.push({
+      x: Math.cos(a)*r*t, y: -0.9+t*1.7+(Math.random()-.5)*.3,
+      z: Math.sin(a)*r*t,
+      size: 0.5+Math.random()*1.3,
+      alpha: 0.12+Math.random()*0.45,
+      speed: 0.001+Math.random()*0.003,
+      drift: (Math.random()-.5)*0.007,
+    });
+  }
 
-heartBtn.addEventListener('click', () => {
-  heartBtn.style.transform = 'scale(0.88)';
-  setTimeout(() => { heartBtn.style.transform = ''; }, 140);
+  // Orbiting pink roses
+  const roses = [];
+  for (let i = 0; i < 8; i++) {
+    const t = 0.2 + Math.random()*0.6;
+    roses.push({
+      baseAngle: (i/8)*Math.PI*2,
+      orbitR: 0.75 + Math.random()*0.25,
+      y: -0.6 + t*1.3,
+      size: 6 + Math.random()*6,
+      alpha: 0.75 + Math.random()*0.25,
+      speed: 0.28 + Math.random()*0.22,
+    });
+  }
 
-  const shuffled = [...BLESSINGS].sort(() => Math.random() - 0.5).slice(0, 40);
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
+  function project(px, py, pz) {
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+    const rx = px*cosA - pz*sinA;
+    const rz = px*sinA + pz*cosA;
+    const sc = 210/(4+rz);
+    return { sx: cx+rx*sc*W*0.5, sy: cy+py*sc*H*0.45, depth: rz, scale: sc };
+  }
 
-  shuffled.forEach((text, i) => {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'c-piece';
-      const angle = Math.random() * Math.PI * 2;
-      const dist  = 160 + Math.random() * 300;
-      const dx    = (Math.cos(angle) * dist).toFixed(1) + 'px';
-      const dy    = (-(100 + Math.random() * 340)).toFixed(1) + 'px';
-      const r0    = ((Math.random()-.5)*30).toFixed(1) + 'deg';
-      const r1    = ((Math.random()-.5)*130).toFixed(1) + 'deg';
-      const sf    = (0.55 + Math.random() * 0.85).toFixed(2);
-      const dur   = (1.6 + Math.random() * 1.6).toFixed(2);
-      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      const fs    = (0.7 + Math.random() * 0.38).toFixed(2);
+  function drawStar(sx, sy, r, al) {
+    ctx.save(); ctx.globalAlpha = al;
+    ctx.shadowBlur = 22; ctx.shadowColor = '#ffb0cc';
+    ctx.beginPath();
+    for (let i=0;i<10;i++){
+      const a = (i*Math.PI/5)-Math.PI/2;
+      const rad = i%2===0 ? r : r*0.42;
+      i===0 ? ctx.moveTo(sx+Math.cos(a)*rad, sy+Math.sin(a)*rad)
+             : ctx.lineTo(sx+Math.cos(a)*rad, sy+Math.sin(a)*rad);
+    }
+    ctx.closePath();
+    ctx.fillStyle = '#ffcce0';
+    ctx.fill();
+    ctx.restore();
+  }
 
-      el.textContent = text;
-      el.style.cssText = `
-        left:${(cx + (Math.random()-.5)*100).toFixed(0)}px;
-        top:${(cy + (Math.random()-.5)*80).toFixed(0)}px;
-        font-size:${fs}rem;
-        color:${color};
-        font-weight:${Math.random()>.5?'600':'400'};
-        --dx:${dx}; --dy:${dy}; --r0:${r0}; --r1:${r1}; --sf:${sf};
-        animation:confettiFly ${dur}s cubic-bezier(0.15,0.85,0.35,1) forwards;
-        text-shadow:0 1px 6px rgba(0,0,0,0.1);
-      `;
-      stage.appendChild(el);
-      setTimeout(() => el.remove(), parseFloat(dur) * 1000 + 300);
-    }, i * 38);
-  });
-});
+  function drawRose(x, y, size, al) {
+    function petal(cx,cy,ang,len,wid,col){
+      const cos=Math.cos(ang),sin=Math.sin(ang);
+      const tip={x:cx+cos*len,y:cy+sin*len};
+      const lc={x:cx+Math.cos(ang-.9)*wid,y:cy+Math.sin(ang-.9)*wid};
+      const rc={x:cx+Math.cos(ang+.9)*wid,y:cy+Math.sin(ang+.9)*wid};
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.quadraticCurveTo(lc.x,lc.y,tip.x,tip.y);
+      ctx.quadraticCurveTo(rc.x,rc.y,cx,cy);
+      ctx.fillStyle=col; ctx.fill();
+    }
+    ctx.save();
+    ctx.globalAlpha = al*0.92;
+    ctx.shadowBlur = 14; ctx.shadowColor = 'rgba(255,180,210,0.8)';
+    for(let i=0;i<6;i++) petal(x,y,(i/6)*Math.PI*2,size*.9,size*.55,'rgba(255,210,228,0.72)');
+    for(let i=0;i<5;i++) petal(x,y,(i/5)*Math.PI*2+.3,size*.6,size*.38,'rgba(255,225,238,0.82)');
+    for(let i=0;i<4;i++) petal(x,y,(i/4)*Math.PI*2+.6,size*.35,size*.22,'rgba(255,240,248,0.92)');
+    ctx.beginPath(); ctx.arc(x,y,size*.18,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.95)';
+    ctx.shadowBlur=8; ctx.shadowColor='#ffb8d4';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // Cream background matching site
+    ctx.fillStyle = '#fff8f9'; ctx.fillRect(0,0,W,H);
+    // Soft centre glow
+    const bg = ctx.createRadialGradient(cx,cy*0.7,0,cx,cy,W*0.7);
+    bg.addColorStop(0,'rgba(255,220,235,0.35)');
+    bg.addColorStop(1,'rgba(255,248,249,0)');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    const all = [];
+
+    for(const p of treePoints){
+      const pr = project(p.x,p.y,p.z);
+      const depthFade = (pr.depth+1)/2;
+      all.push({ type:'dot', sx:pr.sx, sy:pr.sy, depth:pr.depth,
+        size:p.size*pr.scale*18, alpha:p.alpha*(0.55+depthFade*0.45), layer:p.layer });
+    }
+
+    for(const d of dust){
+      d.y -= d.speed; d.x += d.drift;
+      if(d.y < -1.15){ d.y=0.9; d.x=(Math.random()-.5)*.35; }
+      const pr = project(d.x,d.y,d.z);
+      all.push({ type:'dust', sx:pr.sx, sy:pr.sy, depth:pr.depth,
+        size:d.size*pr.scale*13, alpha:d.alpha });
+    }
+
+    all.sort((a,b)=>a.depth-b.depth);
+
+    for(const item of all){
+      if(item.sx<-20||item.sx>W+20||item.sy<-20||item.sy>H+20) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.min(item.alpha,1);
+      if(item.type==='dot'){
+        const g = ctx.createRadialGradient(item.sx,item.sy,0,item.sx,item.sy,item.size);
+        // light pink gradient
+        g.addColorStop(0,'rgba(255,210,228,0.98)');
+        g.addColorStop(0.45,'rgba(255,185,210,0.55)');
+        g.addColorStop(1,'rgba(255,170,205,0)');
+        ctx.fillStyle=g;
+        ctx.shadowBlur=item.size*1.6; ctx.shadowColor='rgba(255,160,200,0.35)';
+        ctx.beginPath(); ctx.arc(item.sx,item.sy,item.size,0,Math.PI*2); ctx.fill();
+      } else {
+        ctx.fillStyle='rgba(255,190,215,0.55)';
+        ctx.shadowBlur=3; ctx.shadowColor='#ffb8d4';
+        ctx.beginPath(); ctx.arc(item.sx,item.sy,item.size,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    for(const r of roses){
+      const a = r.baseAngle + angle*r.speed;
+      const rx = Math.cos(a)*r.orbitR, rz = Math.sin(a)*r.orbitR;
+      const pr = project(rx,r.y,rz);
+      if(pr.sx>0&&pr.sx<W&&pr.sy>0&&pr.sy<H){
+        const da = (pr.depth+1.5)/3;
+        drawRose(pr.sx,pr.sy,r.size*pr.scale*14,r.alpha*da);
+      }
+    }
+
+    const top = project(0,-0.88,0);
+    drawStar(top.sx,top.sy,13,0.95);
+
+    // Top halo
+    ctx.save();
+    ctx.globalAlpha = 0.22+0.08*Math.sin(Date.now()/600);
+    const halo = ctx.createRadialGradient(top.sx,top.sy,0,top.sx,top.sy,38);
+    halo.addColorStop(0,'rgba(255,180,210,0.7)');
+    halo.addColorStop(1,'rgba(255,200,225,0)');
+    ctx.fillStyle=halo;
+    ctx.beginPath(); ctx.arc(top.sx,top.sy,38,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    angle += 0.004;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 </script>
 </body>
 </html>
