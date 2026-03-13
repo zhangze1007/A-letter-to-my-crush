@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💌 For You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose: #e8667a;
+      --blush: #f9c0cc;
+      --petal: #fde8ed;
+      --cream: #fff8f9;
+      --deep: #7a2d3e;
+      --gold: #d4a96a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      font-family: 'Lora', Georgia, serif;
+      color: var(--deep);
+      overflow-x: hidden;
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E🌸%3C/text%3E%3C/svg%3E") 12 12, auto;
+    }
+
+    /* ── Floating petals background ── */
+    #petal-canvas {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 8vw, 6rem);
+      font-style: italic;
+      color: var(--rose);
+      text-shadow: 0 2px 30px rgba(232,102,122,0.25);
+      animation: fadeDown 1.2s ease both;
+      line-height: 1.1;
+    }
+
+    .hero-sub {
+      margin-top: 1.2rem;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--deep);
+      opacity: 0.7;
+      letter-spacing: 0.08em;
+      animation: fadeDown 1.2s 0.3s ease both;
+    }
+
+    .scroll-hint {
+      margin-top: 3rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--rose);
+      opacity: 0;
+      animation: fadeIn 1s 1.8s ease forwards;
+    }
+    .scroll-hint span { display: block; font-size: 1.4rem; margin-top: 0.4rem; animation: bounce 1.5s infinite; }
+
+    /* ── Letter Section ── */
+    .letter-section {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 4rem 2rem;
+    }
+
+    .envelope-wrap {
+      max-width: 680px; width: 100%;
+      perspective: 1000px;
+    }
+
+    .envelope {
+      background: linear-gradient(135deg, #fff5f7 60%, #fde8ed 100%);
+      border: 1.5px solid var(--blush);
+      border-radius: 4px;
+      box-shadow: 0 8px 60px rgba(232,102,122,0.15), 0 2px 12px rgba(232,102,122,0.08);
+      padding: 3rem 3.5rem 3.5rem;
+      position: relative;
+      transform: translateY(40px); opacity: 0;
+      transition: transform 0.8s ease, opacity 0.8s ease;
+    }
+    .envelope.visible { transform: translateY(0); opacity: 1; }
+
+    .envelope::before {
+      content: '';
+      position: absolute; top: -1px; left: -1px; right: -1px;
+      height: 6px;
+      background: linear-gradient(90deg, var(--blush), var(--rose), var(--blush));
+      border-radius: 4px 4px 0 0;
+    }
+
+    .wax-seal {
+      width: 56px; height: 56px;
+      background: radial-gradient(circle at 40% 35%, #e8667a, #c04060);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 16px rgba(192,64,96,0.35);
+      margin: 0 auto 2.5rem;
+    }
+
+    .letter-date {
+      font-size: 0.8rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--rose);
+      margin-bottom: 1.5rem; opacity: 0.8;
+    }
+
+    .letter-body {
+      font-size: 1.05rem; line-height: 2;
+      color: #5a2030;
+    }
+    .letter-body p { margin-bottom: 1.2rem; }
+    .letter-body .greeting { font-size: 1.3rem; font-style: italic; margin-bottom: 1.6rem; }
+    .letter-body .sign-off { margin-top: 2rem; font-style: italic; text-align: right; }
+    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); }
+
+    /* ── Game Section ── */
+    .game-section {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--rose);
+      margin-bottom: 0.8rem;
+    }
+    .section-hint { opacity: 0.6; font-size: 0.95rem; margin-bottom: 3rem; }
+
+    /* Heart click game */
+    .heart-arena {
+      position: relative;
+      width: min(500px, 90vw);
+      height: 380px;
+      border: 1.5px dashed var(--blush);
+      border-radius: 20px;
+      background: rgba(255,245,247,0.7);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+      cursor: crosshair;
+    }
+
+    .heart-arena .idle-text {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: var(--rose); opacity: 0.5;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .heart-pop {
+      position: absolute;
+      font-size: 1.8rem;
+      pointer-events: none;
+      animation: heartRise 1.4s ease forwards;
+      will-change: transform, opacity;
+    }
+
+    .score-display {
+      margin-top: 1.5rem;
+      font-size: 1rem; color: var(--deep);
+      letter-spacing: 0.05em;
+    }
+    .score-display strong { color: var(--rose); font-size: 1.3rem; }
+
+    .message-box {
+      margin-top: 1.5rem;
+      min-height: 2rem;
+      font-style: italic;
+      color: var(--rose);
+      font-size: 1.05rem;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .message-box.show { opacity: 1; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 3rem 2rem;
+      font-size: 0.85rem;
+      color: var(--rose);
+      opacity: 0.5;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(8px); }
+    }
+    @keyframes heartRise {
+      0%   { transform: translateY(0) scale(0.5) rotate(-15deg); opacity: 1; }
+      60%  { transform: translateY(-120px) scale(1.2) rotate(10deg); opacity: 0.9; }
+      100% { transform: translateY(-200px) scale(0.8) rotate(-5deg); opacity: 0; }
+    }
+    @keyframes petalFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 0.8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="petal-canvas"></canvas>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <h1 class="hero-title">For You,<br/>Only You.</h1>
+  <p class="hero-sub">一封藏在代码里的情书 · A letter hidden in code</p>
+  <p class="scroll-hint">scroll down <span>↓</span></p>
+</section>
+
+<!-- ─── LETTER ─── -->
+<section class="letter-section">
+  <div class="envelope-wrap">
+    <div class="envelope" id="envelope">
+      <div class="wax-seal">💌</div>
+      <p class="letter-date">一个普通却又不普通的日子</p>
+      <div class="letter-body">
+        <p class="greeting">亲爱的你，</p>
+        <p>
+          有些话，说出口总觉得太重，放在心里又太憋屈。
+          所以我把它们藏进了这一行行代码里——
+          只有你，才会看见这里。
+        </p>
+        <p>
+          我不知道你有没有注意过，
+          每次你笑的时候，我都会不自觉地多看一眼。
+          不是因为别的，只是觉得——
+          世界好像在那一刻变得安静了。
+        </p>
+        <p>
+          我没办法给你承诺什么大事，
+          但我可以告诉你，有你在的地方，
+          我总会想多待一会儿。
+        </p>
+        <p>
+          这个网站，是我能想到的最笨、也最真诚的方式，
+          来告诉你：<em>你对我来说，不一样。</em>
+        </p>
+        <p class="sign-off">
+          带着一点紧张，很多真心<br/>
+          <span>— 你猜猜是谁 🌸</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GAME ─── -->
+<section class="game-section">
+  <h2 class="section-title">点击，解锁惊喜 ✨</h2>
+  <p class="section-hint">在下面的空间里随便点击，看看会发生什么</p>
+
+  <div class="heart-arena" id="arena">
+    <p class="idle-text" id="idle-text">点我 ♡</p>
+  </div>
+
+  <p class="score-display">你已经解锁了 <strong id="count">0</strong> 个小心心</p>
+  <p class="message-box" id="msg-box"></p>
+</section>
+
+<footer>made with 🌸 just for you · 2025</footer>
+
+<script>
+// ── Falling petal background ──
+(function() {
+  const canvas = document.getElementById('petal-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, petals = [];
+
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+
+  const EMOJIS = ['🌸','🌷','🌺','💮','🩷'];
+  function newPetal() {
+    return {
+      x: Math.random() * W,
+      y: -30,
+      size: 12 + Math.random() * 16,
+      speed: 0.5 + Math.random() * 1,
+      drift: (Math.random() - 0.5) * 0.4,
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.04,
+      emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+      alpha: 0.5 + Math.random() * 0.5,
+    };
+  }
+
+  for (let i = 0; i < 18; i++) {
+    const p = newPetal(); p.y = Math.random() * H; petals.push(p);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (Math.random() < 0.03 && petals.length < 30) petals.push(newPetal());
+    petals = petals.filter(p => p.y < H + 40);
+    for (const p of petals) {
+      p.y += p.speed; p.x += p.drift; p.rot += p.rotSpeed;
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.font = `${p.size}px serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(p.emoji, 0, 0);
+      ctx.restore();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Scroll reveal for envelope ──
+const envelope = document.getElementById('envelope');
+const observer = new IntersectionObserver(([e]) => {
+  if (e.isIntersecting) { envelope.classList.add('visible'); observer.disconnect(); }
+}, { threshold: 0.25 });
+observer.observe(envelope);
+
+// ── Heart click game ──
+const arena = document.getElementById('arena');
+const countEl = document.getElementById('count');
+const msgBox = document.getElementById('msg-box');
+const idleText = document.getElementById('idle-text');
+
+const HEARTS = ['💗','💓','💞','💕','💖','🩷','💝','❤️','💘','🌸'];
+const MESSAGES = [
+  "每一下点击，都是一点小勇气 🌸",
+  "你笑起来真的很好看 💗",
+  "谢谢你愿意看到这里 💌",
+  "希望你今天过得很好 ☀️",
+  "你让我觉得世界更温柔了一点 🌷",
+  "不知道你有没有感觉到，我在偷偷喜欢你 💞",
+  "你是我藏在心里的小秘密 🤫💕",
+  "如果可以的话，我想多陪你一会儿 🌙",
+  "100个心心！你真的很认真 ✨",
+  "我也不知道怎么说，但就是很喜欢你 💝",
+];
+
+let count = 0;
+function showMessage(txt) {
+  msgBox.textContent = txt;
+  msgBox.classList.add('show');
+  clearTimeout(msgBox._t);
+  msgBox._t = setTimeout(() => msgBox.classList.remove('show'), 3000);
+}
+
+arena.addEventListener('click', (e) => {
+  idleText.style.opacity = '0';
+  const rect = arena.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  for (let i = 0; i < 3 + Math.floor(Math.random() * 4); i++) {
+    const el = document.createElement('span');
+    el.className = 'heart-pop';
+    el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+    el.style.left = (x - 16 + (Math.random() - 0.5) * 60) + 'px';
+    el.style.top = (y - 16) + 'px';
+    el.style.animationDelay = (i * 0.08) + 's';
+    arena.appendChild(el);
+    setTimeout(() => el.remove(), 1600);
+  }
+
+  count++;
+  countEl.textContent = count;
+
+  const milestones = {5: 0, 10: 1, 20: 2, 30: 3, 50: 4, 60: 5, 75: 6, 88: 7, 100: 8};
+  if (milestones[count] !== undefined) showMessage(MESSAGES[milestones[count]]);
+  else if (count > 100 && count % 25 === 0) showMessage(MESSAGES[9]);
+});
+</script>
+</body>
+</html>
