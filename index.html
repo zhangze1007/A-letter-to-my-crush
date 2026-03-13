@@ -7,20 +7,33 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* ── 核心颜色定义 ── */
     :root {
-      --rose: #e8667a; --blush: #f9c0cc;
-      --cream: #fff8f9; --deep: #7a2d3e;
+      --rose: #e8667a;       /* 玫瑰粉 */
+      --blush: #f9c0cc;      /* 腮红粉 */
+      /* 全局背景色：统一为深星空黑 */
+      --bg-dark: #0a0a0c;     
+      /* 文字颜色：使用较亮的粉色以在黑底上识读 */
+      --text-main: #f5d0e0;  
+      --text-highlight: #ffadd0;
     }
+
     html { scroll-behavior: smooth; }
+    
     body {
-      background: var(--cream);
+      background-color: var(--bg-dark); /* 应用全局深色背景 */
       font-family: 'Lora', Georgia, serif;
-      color: var(--deep); overflow-x: hidden;
+      color: var(--text-main); /* 使用亮色文字 */
+      overflow-x: hidden;
+      /* 樱花鼠标指针 */
       cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E🌸%3C/text%3E%3C/svg%3E") 12 12, auto;
     }
+
+    /* 飘落花瓣的 Canvas */
     #petal-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 
-    /* ── Hero ── */
+    /* ── Hero 首屏 ── */
     .hero {
       position: relative; z-index: 1; min-height: 100vh;
       display: flex; flex-direction: column;
@@ -31,12 +44,13 @@
       font-family: 'Playfair Display', serif;
       font-size: clamp(2.8rem, 8vw, 6rem);
       font-style: italic; color: var(--rose);
-      text-shadow: 0 2px 30px rgba(232,102,122,0.25);
+      /* 加强文字发光效果 */
+      text-shadow: 0 0 30px rgba(232,102,122,0.7);
       animation: fadeDown 1.2s ease both; line-height: 1.1;
     }
     .hero-sub {
       margin-top: 1.2rem; font-size: clamp(1rem, 2.5vw, 1.25rem);
-      color: var(--deep); opacity: 0.7; letter-spacing: 0.08em;
+      color: var(--text-main); opacity: 0.8; letter-spacing: 0.08em;
       animation: fadeDown 1.2s 0.3s ease both;
     }
     .scroll-hint {
@@ -46,7 +60,7 @@
     }
     .scroll-hint span { display: block; font-size: 1.4rem; margin-top: 0.4rem; animation: bounce 1.5s infinite; }
 
-    /* ── Envelope Section ── */
+    /* ── Envelope 信封区域 ── */
     .letter-section {
       position: relative; z-index: 1;
       display: flex; align-items: flex-start; justify-content: center;
@@ -60,11 +74,12 @@
     }
     .envelope-scene.visible { opacity: 1; transform: translateY(0); }
 
-    /* Closed envelope — fixed smaller size */
+    /* 未打开的信封 - 保持原本大小 */
     .env-closed {
       width: 100%; max-width: 520px; position: relative;
       cursor: pointer; user-select: none;
-      filter: drop-shadow(0 8px 32px rgba(232,102,122,0.18));
+      /* 加强信封发光 */
+      filter: drop-shadow(0 0 30px rgba(232,102,122,0.4));
       transition: transform 0.2s;
     }
     .env-closed:hover { transform: scale(1.02) translateY(-4px); }
@@ -76,14 +91,16 @@
       transition: opacity 0.4s;
     }
 
-    /* Letter card — wide & airy */
+    /* 信件卡片 - 宽敞且通透，使用深色背景 */
     .letter-card {
       width: 100%; max-width: 860px;
-      background: linear-gradient(160deg, #fff9fb 60%, #fde8ed 100%);
-      border: 1.5px solid var(--blush); border-radius: 12px;
+      /* 信件内部使用微亮的深色，保持对比 */
+      background: linear-gradient(160deg, #16161a 60%, #221418 100%);
+      border: 1.5px solid rgba(249,192,204,0.3); /* 降低边框透明度 */
+      border-radius: 12px;
       padding: 3.5rem 5rem 4rem; position: relative;
       overflow: hidden; max-height: 0; opacity: 0; margin-top: 0;
-      box-shadow: 0 16px 64px rgba(232,102,122,0.13);
+      box-shadow: 0 16px 64px rgba(232,102,122,0.2);
       transition: max-height 0s, opacity 0s, margin-top 0s;
     }
     .letter-card.open {
@@ -93,58 +110,64 @@
     @media (max-width: 600px) {
       .letter-card { padding: 2.5rem 2rem 3rem; }
     }
+    /* 信件顶部装饰条 */
     .letter-card::before {
       content: ''; position: absolute; top: -1px; left: -1px; right: -1px; height: 6px;
       background: linear-gradient(90deg, var(--blush), var(--rose), var(--blush));
       border-radius: 12px 12px 0 0;
     }
+    /* 火漆印 */
     .wax-seal {
       width: 56px; height: 56px; border-radius: 50%;
       background: radial-gradient(circle at 40% 35%, #e8667a, #c04060);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.6rem; margin: 0 auto 2.2rem;
-      box-shadow: 0 4px 16px rgba(192,64,96,0.35);
+      box-shadow: 0 4px 16px rgba(192,64,96,0.6);
     }
     .letter-date {
       font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--rose); margin-bottom: 1.6rem; opacity: 0.8; text-align: center;
+      color: var(--rose); margin-bottom: 1.6rem; opacity: 0.9; text-align: center;
     }
     .letter-body {
-      font-size: 1.06rem; line-height: 2.1; color: #5a2030;
+      font-size: 1.06rem; line-height: 2.1; color: var(--text-main); /* 使用亮色文字 */
       max-width: 680px; margin: 0 auto;
     }
     .letter-body p { margin-bottom: 1.4rem; }
     .letter-body .greeting { font-size: 1.3rem; font-style: italic; margin-bottom: 1.8rem; }
-    .letter-body .sign-off { margin-top: 2.5rem; font-style: italic; text-align: right; }
-    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); margin-top: 0.4rem; }
+    .letter-body em { color: var(--text-highlight); font-style: normal; font-weight: 600; }
+    .letter-body .sign-off { margin-top: 2.5rem; font-style: italic; text-align: right; color: var(--text-main); }
+    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); margin-top: 0.4rem; text-shadow: 0 0 10px rgba(232,102,122,0.5); }
 
-    /* ── Tree Section ── */
+    /* ── Rose 玫瑰区域 ── */
     .tree-section {
       position: relative; z-index: 1; min-height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 4rem 2rem; text-align: center;
-      background: var(--cream);
+      background-color: var(--bg-dark); /* 保持一致的背景 */
     }
-    #tree-canvas { display: block; border-radius: 20px; box-shadow: 0 8px 48px rgba(180,60,100,0.25); }
+    /* 玫瑰 Canvas：移除原本的边框和阴影，让它自然地融入黑色背景 */
+    #tree-canvas { display: block; background: transparent; }
+    
     .rose-text {
-      margin-top: 2.5rem;
+      margin-top: -1rem; /* 让文字更靠近玫瑰 */
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      color: rgba(255,220,235,0.9);
-      font-size: clamp(0.95rem, 2vw, 1.15rem);
-      line-height: 2.2; max-width: 520px;
-      letter-spacing: 0.05em;
-      text-shadow: 0 0 20px rgba(255,150,200,0.3);
+      color: var(--text-main);
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      line-height: 2.4; max-width: 540px;
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 15px rgba(255,173,208,0.5);
     }
-    .rose-text em { color: #ffb0d0; font-size: 1.08em; }
+    .rose-text em { color: var(--text-highlight); font-size: 1.1em; font-weight: 600; }
 
     footer {
       position: relative; z-index: 1; text-align: center;
       padding: 3rem 2rem; font-size: 0.85rem;
-      color: var(--rose); opacity: 0.5; letter-spacing: 0.1em;
+      color: var(--rose); opacity: 0.6; letter-spacing: 0.1em;
     }
 
+    /* ── 动画定义 ── */
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-24px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -159,19 +182,16 @@
 
 <canvas id="petal-canvas"></canvas>
 
-<!-- Auto-play BGM (gentle royalty-free romantic piano) via WebAudio -->
 <audio id="bg-music" loop autoplay>
   <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3" type="audio/mpeg"/>
 </audio>
 
-<!-- ─── HERO ─── -->
 <section class="hero">
   <h1 class="hero-title">For You,<br/>Only You.</h1>
   <p class="hero-sub">一封藏在代码里的情书 · A letter hidden in code</p>
   <p class="scroll-hint">scroll down <span>↓</span></p>
 </section>
 
-<!-- ─── ENVELOPE ─── -->
 <section class="letter-section">
   <div class="envelope-scene" id="envelope-scene">
 
@@ -234,12 +254,11 @@
   </div>
 </section>
 
-<!-- ─── 3D TREE ─── -->
 <section class="tree-section">
   <canvas id="tree-canvas"></canvas>
   <div class="rose-text">
     粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征。<br/>
-    它轻声诉说：<em>我爱你，但我害羞开口。</em><br/>
+    它轻声诉说：<em>「我爱你，但我害羞开口。」</em><br/>
     每一片花瓣，都是藏在心里说不出口的话。
   </div>
 </section>
@@ -247,22 +266,27 @@
 <footer>made with 🌸 just for you · 2025</footer>
 
 <script>
-// ── Petal canvas ──
+// ── 1. Petal canvas (飘落花瓣动画) ──
 (function(){
   const c = document.getElementById('petal-canvas'), ctx = c.getContext('2d');
   let W, H, ps = [];
   const res = () => { W = c.width = innerWidth; H = c.height = innerHeight; };
   res(); addEventListener('resize', res);
-  const EM = ['🌸','🌷','🌺','💮','🩷'];
+  // 使用的表情符号，包括不同粉色的心
+  const EM = ['🌸','🌷','🌺','💮','🩷','💖','💕'];
   const np = () => ({ x: Math.random()*W, y: -30, size: 12+Math.random()*16,
     speed: 0.5+Math.random(), drift: (Math.random()-.5)*.4,
     rot: Math.random()*Math.PI*2, rs: (Math.random()-.5)*.04,
-    e: EM[Math.floor(Math.random()*EM.length)], a: .5+Math.random()*.5 });
+    e: EM[Math.floor(Math.random()*EM.length)], a: .4+Math.random()*.6 });
+  // 初始花瓣
   for(let i=0;i<18;i++){ const p=np(); p.y=Math.random()*H; ps.push(p); }
   (function draw(){
     ctx.clearRect(0,0,W,H);
-    if(Math.random()<.03 && ps.length<30) ps.push(np());
+    // 随机生成新花瓣
+    if(Math.random()<.03 && ps.length<35) ps.push(np());
+    // 过滤掉落出屏幕的花瓣
     ps = ps.filter(p=>p.y<H+40);
+    // 绘制并更新每个花瓣
     for(const p of ps){
       p.y+=p.speed; p.x+=p.drift; p.rot+=p.rs;
       ctx.save(); ctx.globalAlpha=p.a;
@@ -275,18 +299,19 @@
   })();
 })();
 
-// ── Auto BGM (browser requires user interaction first) ──
+// ── 2. Auto BGM (背景音乐自动播放处理) ──
 (function(){
   const audio = document.getElementById('bg-music');
-  audio.volume = 0.45;
-  // Try autoplay, fallback to first-touch
+  audio.volume = 0.4; // 调低音量
+  // 尝试自动播放
   const tryPlay = () => { audio.play().catch(()=>{}); };
   tryPlay();
+  // 浏览器限制自动播放，需用户首次交互后触发
   document.addEventListener('click', tryPlay, { once: true });
   document.addEventListener('touchstart', tryPlay, { once: true });
 })();
 
-// ── Envelope open ──
+// ── 3. Envelope open (信封打开动画) ──
 const scene = document.getElementById('envelope-scene');
 const envClosed = document.getElementById('env-closed');
 const flapPoly = document.getElementById('flap-poly');
@@ -294,236 +319,274 @@ const letterCard = document.getElementById('letter-card');
 const envHint = document.getElementById('env-hint');
 let opened = false;
 
+// 滚动到该区域时淡入
 new IntersectionObserver(([e]) => {
   if(e.isIntersecting){ scene.classList.add('visible'); }
 }, { threshold: 0.15 }).observe(scene);
 
+// 点击信封
 envClosed.addEventListener('click', () => {
   if (opened) return;
   opened = true;
-  envHint.style.opacity = '0';
+  envHint.style.opacity = '0'; // 隐藏提示
+  // 翻开信封盖的 SVG 动画
   flapPoly.style.transformOrigin = '50% 0%';
   flapPoly.style.transformBox = 'fill-box';
   flapPoly.style.transition = 'transform 0.8s cubic-bezier(0.4,0,0.2,1)';
   flapPoly.style.transform = 'rotateX(180deg)';
+  // 延迟显示信件卡片
   setTimeout(() => letterCard.classList.add('open'), 500);
 });
 
-// ── 3D Pink Christmas Tree (ring-layer method like reference) ──
+// ── 4. 3D Crystal Rose (新：视频同款水晶玫瑰) ──
 (function(){
   const canvas = document.getElementById('tree-canvas');
   const ctx = canvas.getContext('2d');
-  const W = Math.min(460, window.innerWidth - 40);
-  const H = Math.min(560, window.innerHeight * 0.75);
-  canvas.width = W; canvas.height = H;
-  const cx = W/2, cy = H*0.53;
-  let angle = 0;
+  
+  // 适配屏幕大小
+  let SIZE = Math.min(500, window.innerWidth - 40);
+  if (window.innerWidth < 600) SIZE = 350; // 手机端缩小
 
-  // Build tree as HORIZONTAL RINGS stacked vertically (like the video)
-  // Each ring is a circle of tiny dots at a given height & radius
-  const treePoints = [];
-  const RINGS = 60; // number of ring layers top→bottom
-  for (let ri = 0; ri < RINGS; ri++) {
-    const t = ri / (RINGS - 1); // 0=top 1=bottom
-    const ringR = 0.06 + t * 0.72; // cone radius grows downward
-    const y3d = -0.80 + t * 1.55;
-    // more dots per ring as we go down
-    const dotsInRing = Math.floor(18 + t * 80);
-    for (let di = 0; di < dotsInRing; di++) {
-      const a = (di / dotsInRing) * Math.PI * 2;
-      // slight random scatter in radius for organic look
-      const scatter = ringR * (0.85 + Math.random() * 0.30);
-      treePoints.push({
-        x: Math.cos(a) * scatter,
-        y: y3d + (Math.random() - 0.5) * 0.025,
-        z: Math.sin(a) * scatter,
-        size: 0.8 + Math.random() * 1.1,
-        alpha: 0.55 + Math.random() * 0.45,
-      });
-    }
-  }
-  // Add some inner fill dots so tree isn't hollow in middle
-  for (let i = 0; i < 400; i++) {
-    const t = Math.random();
-    const ringR = 0.06 + t * 0.72;
-    const a = Math.random() * Math.PI * 2;
-    const r = Math.random() * ringR * 0.6;
-    treePoints.push({
-      x: Math.cos(a) * r,
-      y: -0.80 + t * 1.55 + (Math.random()-0.5)*0.04,
-      z: Math.sin(a) * r,
-      size: 0.5 + Math.random() * 0.7,
-      alpha: 0.25 + Math.random() * 0.35,
-    });
-  }
+  canvas.width = SIZE; canvas.height = SIZE;
+  const cx = SIZE/2, cy = SIZE/2;
+  let t = 0; // 全局时间
 
-  // Floating dust particles drifting upward around the tree
-  const dust = [];
-  for (let i = 0; i < 180; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const r = 0.3 + Math.random() * 1.1;
-    dust.push({
-      x: Math.cos(a) * r,
-      y: -0.9 + Math.random() * 2.0,
-      z: Math.sin(a) * r,
-      size: 0.4 + Math.random() * 1.0,
-      alpha: 0.08 + Math.random() * 0.38,
-      speed: 0.0008 + Math.random() * 0.0025,
-      drift: (Math.random() - 0.5) * 0.006,
-    });
-  }
+  // 1. 生成周围漂浮的闪光粒子 (视频中的星星/光点)
+  const sparks = Array.from({length: 80}, () => ({
+    x: (Math.random()-0.5)*SIZE*1.2, // 更宽的散布
+    y: (Math.random()-0.5)*SIZE*1.2,
+    r: 0.5 + Math.random()*2, // 大小不一
+    a: Math.random()*Math.PI*2,
+    spd: 0.1 + Math.random()*0.4, // 向上飘移速度
+    drift: (Math.random()-0.5)*0.5, // 左右晃动
+    alpha: 0.2 + Math.random()*0.7,
+    pulse: Math.random()*Math.PI*2, // 呼吸闪烁
+  }));
 
-  // Orbiting pink roses around the tree
-  const roses = [];
-  for (let i = 0; i < 7; i++) {
-    const t = 0.15 + Math.random() * 0.65;
-    roses.push({
-      baseAngle: (i / 7) * Math.PI * 2,
-      orbitR: 0.82 + Math.random() * 0.22,
-      y: -0.65 + t * 1.25,
-      size: 5 + Math.random() * 5,
-      alpha: 0.7 + Math.random() * 0.3,
-      speed: 0.25 + Math.random() * 0.2,
-    });
-  }
+  // 2. 生成绕玫瑰旋转的“光环”粒子 (视频中的亮环)
+  const ringParticles = Array.from({length: 150}, () => ({
+    angle: Math.random() * Math.PI * 2, // 初始角度
+    speed: 0.005 + Math.random() * 0.01, // 旋转速度
+    radiusOffset: (Math.random()-0.5) * 15, // 环的宽度
+    size: 0.8 + Math.random() * 1.5,
+    alpha: 0.3 + Math.random() * 0.6
+  }));
 
-  // Project 3D → 2D
-  function project(px, py, pz) {
-    const cosA = Math.cos(angle), sinA = Math.sin(angle);
-    const rx = px * cosA - pz * sinA;
-    const rz = px * sinA + pz * cosA;
-    const sc = 200 / (4 + rz);
-    return { sx: cx + rx * sc * W * 0.52, sy: cy + py * sc * H * 0.46, depth: rz, scale: sc };
-  }
-
-  function drawStar(sx, sy, r, al) {
-    ctx.save(); ctx.globalAlpha = al;
-    ctx.shadowBlur = 24; ctx.shadowColor = '#ffaad0';
-    ctx.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const a = (i * Math.PI / 5) - Math.PI / 2;
-      const rad = i % 2 === 0 ? r : r * 0.4;
-      i === 0 ? ctx.moveTo(sx + Math.cos(a)*rad, sy + Math.sin(a)*rad)
-              : ctx.lineTo(sx + Math.cos(a)*rad, sy + Math.sin(a)*rad);
-    }
-    ctx.closePath();
-    ctx.fillStyle = '#ffd6ea';
-    ctx.fill();
-    ctx.restore();
-  }
-
-  function drawRose(x, y, size, al) {
-    function petal(ang, len, wid, col) {
-      const tip = { x: x + Math.cos(ang)*len, y: y + Math.sin(ang)*len };
-      const lc  = { x: x + Math.cos(ang-.85)*wid, y: y + Math.sin(ang-.85)*wid };
-      const rc  = { x: x + Math.cos(ang+.85)*wid, y: y + Math.sin(ang+.85)*wid };
-      ctx.beginPath(); ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(lc.x, lc.y, tip.x, tip.y);
-      ctx.quadraticCurveTo(rc.x, rc.y, x, y);
-      ctx.fillStyle = col; ctx.fill();
-    }
+  // 绘制一个“水晶花瓣”，具有透视和玻璃感
+  // ox, oy: 相对玫瑰中心的偏移, ang: 花瓣角度, len: 长度, wid: 宽度, cols: 颜色组, a: 透明度
+  function drawCrystalPetal(ox, oy, ang, len, wid, cols, a) {
     ctx.save();
-    ctx.globalAlpha = al * 0.9;
-    ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(255,160,200,0.75)';
-    for (let i=0;i<6;i++) petal((i/6)*Math.PI*2, size*.88, size*.52, 'rgba(255,200,225,0.70)');
-    for (let i=0;i<5;i++) petal((i/5)*Math.PI*2+.35, size*.58, size*.36, 'rgba(255,218,235,0.80)');
-    for (let i=0;i<4;i++) petal((i/4)*Math.PI*2+.7, size*.34, size*.20, 'rgba(255,235,245,0.90)');
-    ctx.beginPath(); ctx.arc(x, y, size*.16, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,245,250,0.98)';
-    ctx.shadowBlur = 6; ctx.shadowColor = '#ffb0d0';
+    ctx.translate(cx + ox, cy + oy); // 移动到玫瑰中心再做偏移
+    ctx.rotate(ang);
+    ctx.globalAlpha = a;
+
+    // 绘制主体形状 (Bezier 曲线)
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-wid*0.6, -len*0.3,  -wid*0.8, -len*0.7,  0, -len);
+    ctx.bezierCurveTo( wid*0.8, -len*0.7,   wid*0.6, -len*0.3,  0,  0);
+    ctx.closePath();
+
+    // 渐变填充 (水晶质感)
+    const g = ctx.createLinearGradient(0, 0, 0, -len);
+    g.addColorStop(0,   cols[0]); // 底部深
+    g.addColorStop(0.5, cols[1]); // 中部亮
+    g.addColorStop(1,   cols[2]); // 顶部透
+    ctx.fillStyle = g;
+    
+    // 加强外部发光
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = 'rgba(255,160,200,0.6)';
     ctx.fill();
+
+    // 3. 绘制内部的水晶“高光” (玻璃划痕感)
+    ctx.beginPath();
+    ctx.moveTo(-wid*0.15, -len*0.15);
+    ctx.bezierCurveTo(-wid*0.3, -len*0.5, -wid*0.25, -len*0.8, 0, -len*0.9);
+    ctx.lineWidth = wid*0.12;
+    ctx.strokeStyle = 'rgba(255,245,255,0.7)'; // 极亮的白色
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(255,255,255,0.8)';
+    ctx.stroke();
+
     ctx.restore();
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
+  // 绘制完整玫瑰
+  function drawRose() {
+    const roseR = SIZE * 0.38; // 玫瑰整体半径
+    const spinY = t * 0.35;    // 缓慢的 Y 轴旋转错觉 (通过 scale 计算偏移)
 
-    // Deep rose-purple background (not pure black — warm dark pink)
-    ctx.fillStyle = '#1a0410'; ctx.fillRect(0, 0, W, H);
-    // Subtle radial glow in centre
-    const glow = ctx.createRadialGradient(cx, cy * 0.75, 0, cx, cy, W * 0.6);
-    glow.addColorStop(0, 'rgba(180, 50, 110, 0.12)');
-    glow.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+    // ── 3.1: 绘制枝干 ( Stem ) ──
+    ctx.save();
+    ctx.translate(cx, cy);
+    const stemG = ctx.createLinearGradient(-5, 0, 5, 0);
+    stemG.addColorStop(0,   'rgba(60,140,70,0.7)'); // 深绿
+    stemG.addColorStop(0.5, 'rgba(120,220,130,0.9)'); // 亮绿
+    stemG.addColorStop(1,   'rgba(50,120,60,0.6)');  // 暗绿
+    ctx.beginPath();
+    ctx.moveTo(0, roseR*0.1);
+    // 稍微弯曲的枝干
+    ctx.bezierCurveTo(roseR*0.1, roseR*0.6, -roseR*0.1, roseR*0.9, roseR*0.05, roseR*1.2);
+    ctx.lineWidth = roseR*0.07;
+    ctx.strokeStyle = stemG;
+    ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(100,200,100,0.5)';
+    ctx.lineCap = 'round'; ctx.stroke();
+    // 绘制小叶子
+    ctx.beginPath();
+    ctx.moveTo(roseR*0.04, roseR*0.6);
+    ctx.bezierCurveTo(roseR*0.3, roseR*0.45, roseR*0.45, roseR*0.7, roseR*0.1, roseR*0.8);
+    ctx.fillStyle = 'rgba(80,180,90,0.7)'; ctx.fill();
+    ctx.restore();
 
-    const all = [];
-
-    // Tree ring dots
-    for (const p of treePoints) {
-      const pr = project(p.x, p.y, p.z);
-      const df = (pr.depth + 1) / 2; // depth fade 0→1
-      all.push({
-        type: 'tree',
-        sx: pr.sx, sy: pr.sy, depth: pr.depth,
-        size: Math.max(0.5, p.size * (0.6 + df * 0.5)),
-        alpha: p.alpha * (0.45 + df * 0.55),
-      });
-    }
-
-    // Dust
-    for (const d of dust) {
-      d.y -= d.speed;
-      d.x += d.drift;
-      if (d.y < -1.1) { d.y = 0.95; d.x = (Math.random()-.5)*.4; }
-      const pr = project(d.x, d.y, d.z);
-      all.push({
-        type: 'dust',
-        sx: pr.sx, sy: pr.sy, depth: pr.depth,
-        size: Math.max(0.3, d.size * 0.65),
-        alpha: d.alpha,
-      });
-    }
-
-    // Depth sort back→front
-    all.sort((a, b) => a.depth - b.depth);
-
-    for (const item of all) {
-      if (item.sx < -15 || item.sx > W+15 || item.sy < -15 || item.sy > H+15) continue;
-      ctx.save();
-      ctx.globalAlpha = Math.min(item.alpha, 1);
-      if (item.type === 'tree') {
-        ctx.shadowBlur = item.size * 2.8;
-        ctx.shadowColor = 'rgba(255,130,190,0.55)';
-        ctx.fillStyle = 'rgba(255,190,218,0.95)';
-      } else {
-        ctx.shadowBlur = 1.5;
-        ctx.shadowColor = 'rgba(255,170,210,0.3)';
-        ctx.fillStyle = 'rgba(255,210,232,0.45)';
-      }
+    // ── 3.2: 绘制旋转的光环 ( Ring ) ──
+    ctx.save();
+    const ringRY = roseR * 0.4; // 环的 Y 轴半径 (形成透视扁环)
+    const ringRX = roseR * 1.1; // 环的 X 轴半径
+    const ringTilt = -0.15;      // 环的倾斜角度
+    
+    ctx.translate(cx, cy);
+    ctx.rotate(ringTilt);
+    
+    for (const p of ringParticles) {
+      p.angle += p.speed; // 更新角度
+      const x = Math.cos(p.angle) * (ringRX + p.radiusOffset);
+      const y = Math.sin(p.angle) * (ringRY + p.radiusOffset * 0.5);
+      
+      // 根据角度计算深度 (在玫瑰前面还是后面)
+      const isFront = Math.sin(p.angle + Math.PI/2) > 0;
+      if (!isFront) ctx.globalAlpha = p.alpha * 0.3; // 后面的粒子变暗
+      else ctx.globalAlpha = p.alpha;
+      
+      ctx.fillStyle = 'rgba(255,230,240,1)';
+      ctx.shadowBlur = p.size * 5;
+      ctx.shadowColor = 'rgba(255,180,210,0.8)';
       ctx.beginPath();
-      ctx.arc(item.sx, item.sy, item.size, 0, Math.PI * 2);
+      ctx.arc(x, y, p.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // ── 3.3: 绘制玫瑰花头 ( Bloom ) ──
+    // 采用多层花瓣叠加，并增加缓慢旋转和透视缩放
+
+    // 第一层：外层大花瓣 (5片)
+    const L1_len = roseR * 0.95, L1_wid = roseR * 0.42;
+    for (let i = 0; i < 5; i++) {
+      const ang = (i/5)*Math.PI*2 + spinY;
+      // 透视：背面的花瓣变小、变暗
+      const depthScale = 0.85 + 0.15*Math.cos(ang);
+      const moveX = Math.cos(ang) * roseR * 0.3 * Math.cos(spinY*0.2); // 缓慢晃动
+      const moveY = Math.sin(ang) * roseR * 0.15;
+      
+      drawCrystalPetal(moveX, moveY, ang + Math.PI/2, 
+        L1_len * depthScale, L1_wid * depthScale,
+        ['rgba(210,70,120,0.8)','rgba(255,150,190,0.75)','rgba(255,210,230,0.6)'], 
+        0.8 * (0.7 + 0.3*depthScale));
+    }
+
+    // 第二层：中层花瓣 (5片，交错)
+    const L2_len = roseR * 0.7, L2_wid = roseR * 0.32;
+    for (let i = 0; i < 5; i++) {
+      const ang = (i/5)*Math.PI*2 + spinY + Math.PI/5;
+      const depthScale = 0.9 + 0.1*Math.cos(ang);
+      const moveX = Math.cos(ang) * roseR * 0.18;
+      const moveY = Math.sin(ang) * roseR * 0.08;
+      
+      drawCrystalPetal(moveX, moveY, ang + Math.PI/2, 
+        L2_len * depthScale, L2_wid * depthScale,
+        ['rgba(230,90,140,0.85)','rgba(255,170,210,0.8)','rgba(255,230,245,0.65)'], 
+        0.88 * (0.8 + 0.2*depthScale));
+    }
+
+    // 第三层：内层紧密花瓣 (4片)
+    const L3_len = roseR * 0.45, L3_wid = roseR * 0.22;
+    for (let i = 0; i < 4; i++) {
+      const ang = (i/4)*Math.PI*2 + spinY*1.3;
+      drawCrystalPetal(0, 0, ang + Math.PI/2, 
+        L3_len, L3_wid,
+        ['rgba(200,50,110,0.9)','rgba(255,130,180,0.85)','rgba(255,210,230,0.7)'], 
+        0.95);
+    }
+
+    // ── 3.4: 中心花蕾 ( Core ) ──
+    ctx.save();
+    ctx.translate(cx, cy);
+    // 花蕾主体
+    const budG = ctx.createRadialGradient(-SIZE*0.01, -SIZE*0.01, 2, 0, 0, roseR*0.16);
+    budG.addColorStop(0, 'rgba(255,220,240,0.98)'); // 最中心亮
+    budG.addColorStop(0.6,'rgba(240,100,160,0.95)'); // 中间粉
+    budG.addColorStop(1,  'rgba(190,50,110,0.9)');   // 外部深
+    ctx.beginPath(); ctx.arc(0, 0, roseR*0.15, 0, Math.PI*2);
+    ctx.fillStyle = budG;
+    // 花蕾强光
+    ctx.shadowBlur = 25; ctx.shadowColor = 'rgba(255,120,180,0.8)';
+    ctx.fill();
+    // 表面极强光点
+    ctx.beginPath(); ctx.arc(-roseR*0.05, -roseR*0.06, roseR*0.04, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,250,255,0.8)';
+    ctx.shadowBlur = 2; ctx.fill();
+    ctx.restore();
+
+    // ── 3.5: 整体环境发光 ( Ambient Glow ) ──
+    ctx.save();
+    // 呼吸般的光晕
+    const glowPulse = 0.06 * Math.sin(t*2.2);
+    const glG = ctx.createRadialGradient(cx, cy, roseR*0.5, cx, cy, roseR*1.3 + glowPulse*SIZE*0.1);
+    glG.addColorStop(0, 'rgba(255,140,190,0.2)');
+    glG.addColorStop(1, 'rgba(255,80,150,0)'); // 向外扩散消失
+    ctx.fillStyle = glG;
+    ctx.beginPath(); ctx.arc(cx, cy, roseR*1.5, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // 主绘制循环
+  function draw() {
+    // 1. 清空 Canvas (保持背景透明，使用 body 的黑背景)
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    // 2. 绘制漂浮的闪光粒子 ( Sparks - 在玫瑰后面 )
+    for (const s of sparks) {
+      s.y -= s.spd; // 缓慢向上飘
+      s.x += s.drift * Math.sin(t*0.5 + s.a); // 左右晃动
+      s.pulse += 0.05;
+      
+      // 粒子飞出屏幕后重置到下方
+      if (s.y < -SIZE/2) { s.y = SIZE/2; s.x=(Math.random()-0.5)*SIZE*1.2; }
+      if (s.x < -SIZE/2 || s.x > SIZE/2) s.drift *= -1;
+
+      // 计算透明度 (呼吸闪烁)
+      const pa = s.alpha * (0.3 + 0.7*Math.abs(Math.sin(s.pulse)));
+      
+      ctx.save();
+      ctx.globalAlpha = pa;
+      ctx.fillStyle = 'rgba(255,210,235,1)';
+      // 粒子发光
+      ctx.shadowBlur = s.r * 6; ctx.shadowColor = 'rgba(255,170,210,0.9)';
+      ctx.beginPath();
+      ctx.arc(cx + s.x, cy + s.y, s.r, 0, Math.PI*2);
       ctx.fill();
       ctx.restore();
     }
 
-    // Orbiting roses
-    for (const r of roses) {
-      const a = r.baseAngle + angle * r.speed;
-      const pr = project(Math.cos(a)*r.orbitR, r.y, Math.sin(a)*r.orbitR);
-      if (pr.sx > 0 && pr.sx < W && pr.sy > 0 && pr.sy < H) {
-        const da = Math.max(0.2, (pr.depth + 1.5) / 3);
-        drawRose(pr.sx, pr.sy, r.size * pr.scale * 11, r.alpha * da);
-      }
-    }
+    // 3. 绘制玫瑰主体 (含光环、花瓣、枝干)
+    drawRose();
 
-    // Star on top
-    const top = project(0, -0.83, 0);
-    drawStar(top.sx, top.sy, 12, 0.95);
-
-    // Breathing halo at top
-    ctx.save();
-    ctx.globalAlpha = 0.18 + 0.07 * Math.sin(Date.now() / 550);
-    const halo = ctx.createRadialGradient(top.sx, top.sy, 0, top.sx, top.sy, 35);
-    halo.addColorStop(0, 'rgba(255,150,200,0.75)');
-    halo.addColorStop(1, 'rgba(255,150,200,0)');
-    ctx.fillStyle = halo;
-    ctx.beginPath(); ctx.arc(top.sx, top.sy, 35, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-
-    angle += 0.004;
+    // 4. 更新时间并请求下一帧
+    t += 0.01;
     requestAnimationFrame(draw);
   }
+  
+  // 开始动画
   draw();
+  
+  // 窗口大小改变时适配
+  addEventListener('resize', () => {
+    SIZE = Math.min(500, window.innerWidth - 40);
+    if (window.innerWidth < 600) SIZE = 350;
+    canvas.width = canvas.height = SIZE;
+    // 这里不需要重新初始化粒子，它们会自动调整偏移
+  });
 })();
 </script>
 </body>
