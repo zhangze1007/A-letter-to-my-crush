@@ -13,7 +13,7 @@
     }
     html { scroll-behavior: smooth; }
     body {
-      background: var(--cream); /* 还原奶油色背景 */
+      background: var(--cream);
       font-family: 'Lora', Georgia, serif;
       color: var(--deep); overflow-x: hidden;
       cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='20'%3E🌸%3C/text%3E%3C/svg%3E") 12 12, auto;
@@ -39,6 +39,12 @@
       color: var(--deep); opacity: 0.7; letter-spacing: 0.08em;
       animation: fadeDown 1.2s 0.3s ease both;
     }
+    .scroll-hint {
+      margin-top: 3rem; font-size: 0.85rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--rose);
+      opacity: 0; animation: fadeIn 1s 1.8s ease forwards;
+    }
+    .scroll-hint span { display: block; font-size: 1.4rem; margin-top: 0.4rem; animation: bounce 1.5s infinite; }
 
     /* ── Envelope Section ── */
     .letter-section {
@@ -54,6 +60,7 @@
     }
     .envelope-scene.visible { opacity: 1; transform: translateY(0); }
 
+    /* Closed envelope — fixed smaller size */
     .env-closed {
       width: 100%; max-width: 520px; position: relative;
       cursor: pointer; user-select: none;
@@ -63,6 +70,13 @@
     .env-closed:hover { transform: scale(1.02) translateY(-4px); }
     .env-svg { width: 100%; display: block; }
 
+    .env-hint {
+      margin-top: 1rem; font-size: 0.88rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--rose);
+      transition: opacity 0.4s;
+    }
+
+    /* Letter card — wide & airy */
     .letter-card {
       width: 100%; max-width: 860px;
       background: linear-gradient(160deg, #fff9fb 60%, #fde8ed 100%);
@@ -76,10 +90,33 @@
       max-height: 6000px; opacity: 1; margin-top: 2rem;
       transition: max-height 1.6s 0.55s ease, opacity 0.7s 0.55s, margin-top 0.6s 0.4s;
     }
-    .letter-body { font-size: 1.06rem; line-height: 2.1; color: #5a2030; max-width: 680px; margin: 0 auto; }
+    @media (max-width: 600px) {
+      .letter-card { padding: 2.5rem 2rem 3rem; }
+    }
+    .letter-card::before {
+      content: ''; position: absolute; top: -1px; left: -1px; right: -1px; height: 6px;
+      background: linear-gradient(90deg, var(--blush), var(--rose), var(--blush));
+      border-radius: 12px 12px 0 0;
+    }
+    .wax-seal {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #e8667a, #c04060);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin: 0 auto 2.2rem;
+      box-shadow: 0 4px 16px rgba(192,64,96,0.35);
+    }
+    .letter-date {
+      font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--rose); margin-bottom: 1.6rem; opacity: 0.8; text-align: center;
+    }
+    .letter-body {
+      font-size: 1.06rem; line-height: 2.1; color: #5a2030;
+      max-width: 680px; margin: 0 auto;
+    }
     .letter-body p { margin-bottom: 1.4rem; }
-    .sign-off { margin-top: 2.5rem; font-style: italic; text-align: right; }
-    .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); margin-top: 0.4rem; }
+    .letter-body .greeting { font-size: 1.3rem; font-style: italic; margin-bottom: 1.8rem; }
+    .letter-body .sign-off { margin-top: 2.5rem; font-style: italic; text-align: right; }
+    .letter-body .sign-off span { display: block; font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--rose); margin-top: 0.4rem; }
 
     /* ── Rose Section ── */
     .tree-section {
@@ -87,10 +124,9 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 4rem 2rem; text-align: center;
-      /* 只有玫瑰区域使用深色背景以衬托线条发光 */
       background: linear-gradient(160deg, #1a0318 0%, #2d0628 60%, #1a0318 100%);
     }
-    #tree-canvas { display: block; }
+    #tree-canvas { display: block; border-radius: 24px; box-shadow: 0 12px 60px rgba(200,60,120,0.35); }
     .rose-text {
       margin-top: 2.8rem;
       font-family: 'Playfair Display', serif;
@@ -99,6 +135,7 @@
       font-size: clamp(1rem, 2.2vw, 1.2rem);
       line-height: 2.4; max-width: 540px;
       letter-spacing: 0.06em;
+      text-shadow: 0 1px 12px rgba(200,80,140,0.4);
     }
     .rose-text em { color: #ffadd0; font-size: 1.1em; font-weight: 600; }
 
@@ -112,43 +149,80 @@
       from { opacity: 0; transform: translateY(-24px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes bounce {
+      0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); }
+    }
   </style>
 </head>
 <body>
 
 <canvas id="petal-canvas"></canvas>
 
+<!-- Auto-play BGM (gentle royalty-free romantic piano) via WebAudio -->
 <audio id="bg-music" loop autoplay>
   <source src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0c6ff1bab.mp3" type="audio/mpeg"/>
 </audio>
 
+<!-- ─── HERO ─── -->
 <section class="hero">
   <h1 class="hero-title">For You,<br/>Only You.</h1>
   <p class="hero-sub">一封藏在代码里的情书 · A letter hidden in code</p>
+  <p class="scroll-hint">scroll down <span>↓</span></p>
 </section>
 
+<!-- ─── ENVELOPE ─── -->
 <section class="letter-section">
   <div class="envelope-scene" id="envelope-scene">
+
     <div class="env-closed" id="env-closed">
       <svg class="env-svg" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="520" height="300" rx="10" fill="#fde8ed" stroke="#f9c0cc" stroke-width="2"/>
         <polygon points="0,0 0,300 195,172" fill="#fad0d8" opacity="0.55"/>
         <polygon points="520,0 520,300 325,172" fill="#fad0d8" opacity="0.55"/>
         <polygon points="0,300 260,162 520,300" fill="#f5b8c8" opacity="0.7"/>
-        <polygon class="env-flap-poly" id="flap-poly" points="0,2 520,2 260,155" fill="#f5b8c8" stroke="#f9c0cc" stroke-width="1.5"/>
+        <polygon class="env-flap-poly" id="flap-poly"
+          points="0,2 520,2 260,155"
+          fill="#f5b8c8" stroke="#f9c0cc" stroke-width="1.5"/>
+        <circle cx="260" cy="104" r="27" fill="url(#sg)" filter="url(#sh)"/>
         <text x="260" y="112" text-anchor="middle" font-size="24">💌</text>
+        <defs>
+          <radialGradient id="sg" cx="40%" cy="35%">
+            <stop offset="0%" stop-color="#e8667a"/>
+            <stop offset="100%" stop-color="#c04060"/>
+          </radialGradient>
+          <filter id="sh" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#c04060" flood-opacity="0.3"/>
+          </filter>
+        </defs>
       </svg>
     </div>
 
+    <p class="env-hint" id="env-hint">✦ 点击信封打开 ✦</p>
+
     <div class="letter-card" id="letter-card">
+      <div class="wax-seal">🌸</div>
+      <p class="letter-date">一个普通却又不普通的日子</p>
       <div class="letter-body">
         <p class="greeting">亲爱的 Sujuing，</p>
         <p>有些话，说出口总觉得太重，放在心里又太憋屈。所以我把它们藏进了这一行行代码里来表达这段感情。</p>
         <p>我不知道你是否注意过，每当你笑的时候，我都会不自觉地多看一眼。不是因为别的，只是觉得——世界好像在那一刻变得安静了。</p>
         <p>我总是期待我们之间的偶然，穿着同款颜色的上衣上学。我也总是希望放学后能和你一起走，毕业后才发现，我们未来可能不会再见了。</p>
         <p>我第一次看见你的时候，你戴着黑色的口罩，绑着马尾的辫子看着我在前面 Public speaking。那一刻，我发现我好像对你心动了。</p>
-        <p>（...此处已还原你完整的信件内容...）</p>
+        <p>我还记得，那时我唱了一首《喜欢你》，而你是第一位点赞的，无论是什么理由都让我感到无比欣喜万分。</p>
+        <p>某一天你数日缺席，看见你在 noted 发了伤心的表情，想了许久我还是决定主动关心一下你吧。回想起来，当时的你也许是收到了关于母亲癌症末期的消息。</p>
+        <p>那时候也是我第一次感到无能为力，因为无法帮助你。不过，你的坚强打动了我，你十分重视友情我也一直都知道。</p>
+        <p>我在一些决定上曾让你感到难过以及失望，我知道我提起了一些不该说的事，我也很开心你还是愿意主动在我生日时祝福我。</p>
+        <p>每一次你愿意靠近我的瞬间我还记得，你愿意成为 Lawatan ke MMU projek 的副秘书，主动帮我承担一些事务。</p>
+        <p>我在你是否也对我有感觉这件事上反复思考，但是我不敢表白。我害怕受伤所以只能偷偷地靠近你。</p>
+        <p>Hari Koku 当天借着没事做主动帮你们档口卖咖啡，想着 MUET speaking 能够去你的班练习，只为了多看你一眼。</p>
+        <p>看着你发的 noted 都生动可爱，与线下高冷、淑女的你形成了十分强烈的反差感对比。</p>
+        <p>我们第一组在彩排时，你坐在椅子上安静地看着我所写在白板的故事结构。放学后，你也会来礼堂看我们的表演，虽然最后表演当天我在台上没看见你的身影。</p>
+        <p>其实，我知道你并不喜欢我。这段暗恋其实只是一个人的兵荒马乱，因为我知道如果我不主动找话题，我们之间便是陌生人。</p>
         <p>谢谢你在这段时间里对我的包容，我还是喜欢你，只不过少了那份非要在一起的执着。</p>
+        <p>如果可以，我希望时间能够停在 Camp 我们玩猜谜游戏时，我向着你方向单膝下跪求婚的时刻。（我记得你笑了）</p>
+        <p>如果可以，我希望毕业典礼当天匿名写"我喜欢你"的人是你。</p>
+        <p>如果可以，我希望能够和你进到同一所大学，我希望我的人生未来里有你在。</p>
         <p>所以，这个网站是我能想到的最笨、也最真诚的方式，来告诉你：<em>抒均，我喜欢你。</em></p>
         <p class="sign-off">
           带着一点紧张，且真心<br/>
@@ -156,9 +230,11 @@
         </p>
       </div>
     </div>
+
   </div>
 </section>
 
+<!-- ─── 3D CRYSTAL ROSE ─── -->
 <section class="tree-section">
   <canvas id="tree-canvas"></canvas>
   <div class="rose-text">
@@ -171,7 +247,7 @@
 <footer>made with 🌸 just for you · 2025</footer>
 
 <script>
-// ── 1. 花瓣飘落效果 ──
+// ── Petal canvas ──
 (function(){
   const c = document.getElementById('petal-canvas'), ctx = c.getContext('2d');
   let W, H, ps = [];
@@ -199,11 +275,23 @@
   })();
 })();
 
-// ── 2. 信封点击逻辑 ──
+// ── Auto BGM (browser requires user interaction first) ──
+(function(){
+  const audio = document.getElementById('bg-music');
+  audio.volume = 0.45;
+  // Try autoplay, fallback to first-touch
+  const tryPlay = () => { audio.play().catch(()=>{}); };
+  tryPlay();
+  document.addEventListener('click', tryPlay, { once: true });
+  document.addEventListener('touchstart', tryPlay, { once: true });
+})();
+
+// ── Envelope open ──
 const scene = document.getElementById('envelope-scene');
 const envClosed = document.getElementById('env-closed');
 const flapPoly = document.getElementById('flap-poly');
 const letterCard = document.getElementById('letter-card');
+const envHint = document.getElementById('env-hint');
 let opened = false;
 
 new IntersectionObserver(([e]) => {
@@ -213,66 +301,198 @@ new IntersectionObserver(([e]) => {
 envClosed.addEventListener('click', () => {
   if (opened) return;
   opened = true;
+  envHint.style.opacity = '0';
   flapPoly.style.transformOrigin = '50% 0%';
   flapPoly.style.transformBox = 'fill-box';
-  flapPoly.style.transition = 'transform 0.8s ease';
+  flapPoly.style.transition = 'transform 0.8s cubic-bezier(0.4,0,0.2,1)';
   flapPoly.style.transform = 'rotateX(180deg)';
   setTimeout(() => letterCard.classList.add('open'), 500);
 });
 
-// ── 3. 还原视频图 1 的螺旋线条玫瑰 ──
+// ── 3D Crystal Rose ──
 (function(){
   const canvas = document.getElementById('tree-canvas');
   const ctx = canvas.getContext('2d');
-  const SIZE = Math.min(450, window.innerWidth - 40);
+  const SIZE = Math.min(420, window.innerWidth - 40);
   canvas.width = SIZE; canvas.height = SIZE;
   const cx = SIZE/2, cy = SIZE/2;
-  let t = 0;
+  let t = 0; // global time
 
-  function drawRose() {
+  // Floating sparkle particles around the rose
+  const sparks = Array.from({length: 120}, () => ({
+    x: (Math.random()-0.5)*SIZE*0.9,
+    y: (Math.random()-0.5)*SIZE*0.9,
+    r: 0.5 + Math.random()*2,
+    a: Math.random()*Math.PI*2,
+    spd: 0.2 + Math.random()*0.5,
+    drift: (Math.random()-0.5)*0.8,
+    alpha: 0.1 + Math.random()*0.6,
+    pulse: Math.random()*Math.PI*2,
+  }));
+
+  // Draw one crystal petal as a bezier shape with glassy look
+  function drawPetal(ox, oy, angle, len, wid, colors, alpha) {
     ctx.save();
-    ctx.translate(cx, cy);
-    
-    // 模拟视频中的循环绘制逻辑
-    for (let j = 0; j < 4; j++) {
-      ctx.beginPath();
-      for (let i = 0; i < 120; i++) {
-        let a = i * 0.15 + (j * Math.PI / 2) + t;
-        let r = i * (0.8 + Math.sin(t * 0.5) * 0.1); 
-        let x = Math.cos(a) * r;
-        let y = Math.sin(a) * r * 0.65;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = `rgba(232, 102, 122, ${0.8 - j * 0.15})`;
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-    }
+    ctx.translate(ox, oy);
+    ctx.rotate(angle);
+    ctx.globalAlpha = alpha;
 
-    // 中心发光核心
-    const g = ctx.createRadialGradient(0,0,0, 0,0, 25);
-    g.addColorStop(0, '#fff');
-    g.addColorStop(1, 'transparent');
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0,0,25,0,Math.PI*2); ctx.fill();
-    
-    // 视频同款旋转星环
+    // Main petal shape
     ctx.beginPath();
-    ctx.ellipse(0, 15, 120, 45, Math.PI/8 + t*0.2, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.setLineDash([4, 12]);
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(-wid*0.6, -len*0.3,  -wid*0.8, -len*0.7,  0, -len);
+    ctx.bezierCurveTo( wid*0.8, -len*0.7,   wid*0.6, -len*0.3,  0,  0);
+    ctx.closePath();
+
+    const g = ctx.createLinearGradient(0, 0, 0, -len);
+    g.addColorStop(0,   colors[0]);
+    g.addColorStop(0.4, colors[1]);
+    g.addColorStop(1,   colors[2]);
+    ctx.fillStyle = g;
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = 'rgba(255,120,180,0.5)';
+    ctx.fill();
+
+    // Crystal highlight streak
+    ctx.beginPath();
+    ctx.moveTo(-wid*0.15, -len*0.1);
+    ctx.bezierCurveTo(-wid*0.25, -len*0.4, -wid*0.2, -len*0.7, -wid*0.05, -len*0.85);
+    ctx.lineWidth = wid*0.18;
+    ctx.strokeStyle = 'rgba(255,240,250,0.55)';
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(255,255,255,0.6)';
     ctx.stroke();
-    ctx.setLineDash([]);
-    
+
     ctx.restore();
   }
 
-  (function loop(){
+  function drawRose() {
+    const roseR = SIZE * 0.34; // rose radius
+    const spin = t * 0.4;     // slow y-axis spin illusion via scale
+
+    // ── Layer 1: outer petals (5 petals) ──
+    const outerLen = roseR * 0.88;
+    const outerWid = roseR * 0.38;
+    for (let i = 0; i < 5; i++) {
+      const ang = (i/5)*Math.PI*2 + spin;
+      const depthScale = 0.85 + 0.15*Math.cos(ang);
+      const px = cx + Math.cos(ang)*roseR*0.28*Math.cos(spin*0.3);
+      const py = cy + Math.sin(ang)*roseR*0.18;
+      drawPetal(px, py, ang + Math.PI/2 + spin,
+        outerLen * depthScale, outerWid * depthScale,
+        ['rgba(220,80,130,0.85)','rgba(240,120,165,0.75)','rgba(255,180,210,0.55)'],
+        0.82 * (0.7 + 0.3*depthScale));
+    }
+
+    // ── Layer 2: mid petals (5, offset) ──
+    const midLen = roseR * 0.65;
+    const midWid = roseR * 0.28;
+    for (let i = 0; i < 5; i++) {
+      const ang = (i/5)*Math.PI*2 + spin + Math.PI/5;
+      const depthScale = 0.88 + 0.12*Math.cos(ang + spin*0.5);
+      const px = cx + Math.cos(ang)*roseR*0.16;
+      const py = cy + Math.sin(ang)*roseR*0.12;
+      drawPetal(px, py, ang + Math.PI/2 + spin,
+        midLen * depthScale, midWid * depthScale,
+        ['rgba(235,90,140,0.9)','rgba(250,140,175,0.80)','rgba(255,200,225,0.60)'],
+        0.88 * (0.75 + 0.25*depthScale));
+    }
+
+    // ── Layer 3: inner petals (4, tighter) ──
+    const innLen = roseR * 0.42;
+    const innWid = roseR * 0.18;
+    for (let i = 0; i < 4; i++) {
+      const ang = (i/4)*Math.PI*2 + spin*1.2 + Math.PI/8;
+      drawPetal(cx, cy, ang + Math.PI/2 + spin,
+        innLen, innWid,
+        ['rgba(210,60,120,0.95)','rgba(240,110,160,0.85)','rgba(255,175,210,0.65)'],
+        0.92);
+    }
+
+    // ── Centre bud ──
+    ctx.save();
+    ctx.translate(cx, cy);
+    // Bud base
+    const budG = ctx.createRadialGradient(-4,-4,2, 0,0, roseR*0.14);
+    budG.addColorStop(0, 'rgba(255,200,225,0.95)');
+    budG.addColorStop(0.5,'rgba(230,90,145,0.90)');
+    budG.addColorStop(1,  'rgba(180,40,100,0.85)');
+    ctx.beginPath(); ctx.arc(0,0,roseR*0.13,0,Math.PI*2);
+    ctx.fillStyle = budG;
+    ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(255,100,160,0.7)';
+    ctx.fill();
+    // Specular highlight
+    ctx.beginPath(); ctx.arc(-roseR*0.04,-roseR*0.05,roseR*0.04,0,Math.PI*2);
+    ctx.fillStyle = 'rgba(255,245,255,0.7)';
+    ctx.shadowBlur = 0; ctx.fill();
+    ctx.restore();
+
+    // ── Outer glow ring ──
+    ctx.save();
+    const glowPulse = 0.08*Math.sin(t*1.8);
+    const glG = ctx.createRadialGradient(cx,cy,roseR*0.6, cx,cy,roseR*1.15+glowPulse*30);
+    glG.addColorStop(0,'rgba(220,80,140,0.18)');
+    glG.addColorStop(1,'rgba(200,60,120,0)');
+    ctx.fillStyle = glG;
+    ctx.beginPath(); ctx.arc(cx,cy,roseR*1.15,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // ── Stem ──
+    ctx.save();
+    ctx.translate(cx, cy);
+    const stemG = ctx.createLinearGradient(-4,0,4,0);
+    stemG.addColorStop(0,'rgba(100,180,100,0.7)');
+    stemG.addColorStop(0.5,'rgba(150,220,120,0.9)');
+    stemG.addColorStop(1,'rgba(80,160,80,0.6)');
+    ctx.beginPath();
+    ctx.moveTo(0, roseR*0.12);
+    ctx.bezierCurveTo(roseR*0.08, roseR*0.5, -roseR*0.05, roseR*0.7, roseR*0.04, roseR*1.0);
+    ctx.lineWidth = roseR*0.06;
+    ctx.strokeStyle = stemG;
+    ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(80,180,80,0.4)';
+    ctx.lineCap = 'round'; ctx.stroke();
+    // Small leaf
+    ctx.beginPath();
+    ctx.moveTo(roseR*0.02, roseR*0.55);
+    ctx.bezierCurveTo(roseR*0.22, roseR*0.42, roseR*0.32, roseR*0.62, roseR*0.08, roseR*0.68);
+    ctx.fillStyle = 'rgba(100,190,100,0.65)';
+    ctx.shadowBlur = 4; ctx.fill();
+    ctx.restore();
+  }
+
+  function draw() {
     ctx.clearRect(0,0,SIZE,SIZE);
+
+    // Background: deep warm dark
+    const bg = ctx.createRadialGradient(cx,cy*0.8,0, cx,cy,SIZE*0.7);
+    bg.addColorStop(0,'#2a0520');
+    bg.addColorStop(0.6,'#1a0318');
+    bg.addColorStop(1,'#0d0110');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,SIZE,SIZE);
+
+    // Sparkle particles
+    for (const s of sparks) {
+      s.y -= s.spd * 0.4;
+      s.x += s.drift * 0.15;
+      s.pulse += 0.04;
+      if (s.y < -SIZE/2) { s.y = SIZE/2; s.x=(Math.random()-0.5)*SIZE*0.9; }
+      const pa = s.alpha * (0.4 + 0.6*Math.abs(Math.sin(s.pulse)));
+      ctx.save();
+      ctx.globalAlpha = pa;
+      ctx.fillStyle = 'rgba(255,200,230,0.9)';
+      ctx.shadowBlur = s.r*4; ctx.shadowColor='rgba(255,160,210,0.6)';
+      ctx.beginPath();
+      ctx.arc(cx+s.x, cy+s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     drawRose();
-    t += 0.025;
-    requestAnimationFrame(loop);
-  })();
+
+    t += 0.012;
+    requestAnimationFrame(draw);
+  }
+  draw();
 })();
 </script>
 </body>
