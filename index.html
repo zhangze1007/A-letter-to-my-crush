@@ -126,18 +126,18 @@
       padding: 4rem 2rem; text-align: center;
       background: var(--cream);
     }
-    #tree-canvas { display: block; border-radius: 20px; box-shadow: 0 8px 48px rgba(232,102,122,0.15); }
+    #tree-canvas { display: block; border-radius: 20px; box-shadow: 0 8px 48px rgba(180,60,100,0.25); }
     .rose-text {
       margin-top: 2.5rem;
       font-family: 'Playfair Display', serif;
       font-style: italic;
-      color: var(--deep);
+      color: rgba(255,220,235,0.9);
       font-size: clamp(0.95rem, 2vw, 1.15rem);
       line-height: 2.2; max-width: 520px;
       letter-spacing: 0.05em;
-      opacity: 0.85;
+      text-shadow: 0 0 20px rgba(255,150,200,0.3);
     }
-    .rose-text em { color: var(--rose); font-size: 1.08em; }
+    .rose-text em { color: #ffb0d0; font-size: 1.08em; }
 
     footer {
       position: relative; z-index: 1; text-align: center;
@@ -238,9 +238,9 @@
 <section class="tree-section">
   <canvas id="tree-canvas"></canvas>
   <div class="rose-text">
-    白玫瑰，是<em>纯洁</em>与<em>真挚</em>的象征。<br/>
-    它不张扬，却深沉；不喧嚣，却永恒。<br/>
-    就像某些感情——<em>安静地开着，从未凋谢。</em>
+    粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征。<br/>
+    它轻声诉说：<em>我爱你，但我害羞开口。</em><br/>
+    每一片花瓣，都是藏在心里说不出口的话。
   </div>
 </section>
 
@@ -309,189 +309,215 @@ envClosed.addEventListener('click', () => {
   setTimeout(() => letterCard.classList.add('open'), 500);
 });
 
-// ── 3D Pink Christmas Tree ──
+// ── 3D Pink Christmas Tree (ring-layer method like reference) ──
 (function(){
   const canvas = document.getElementById('tree-canvas');
   const ctx = canvas.getContext('2d');
-  const W = Math.min(480, window.innerWidth - 40);
-  const H = Math.min(540, window.innerHeight * 0.72);
+  const W = Math.min(460, window.innerWidth - 40);
+  const H = Math.min(560, window.innerHeight * 0.75);
   canvas.width = W; canvas.height = H;
-  const cx = W/2, cy = H*0.52;
+  const cx = W/2, cy = H*0.53;
   let angle = 0;
 
-  // Tree points
+  // Build tree as HORIZONTAL RINGS stacked vertically (like the video)
+  // Each ring is a circle of tiny dots at a given height & radius
   const treePoints = [];
-  for (let i = 0; i < 180; i++) {
-    const t = i / 180;
-    const y = -0.85 + t * 1.6;
-    const radius = t * 0.72;
-    const count = Math.floor(6 + t * 28);
-    for (let j = 0; j < count; j++) {
-      const a = (j / count) * Math.PI * 2 + t * 6 * Math.PI * 2;
-      const r = radius * (0.6 + Math.random() * 0.4);
+  const RINGS = 60; // number of ring layers top→bottom
+  for (let ri = 0; ri < RINGS; ri++) {
+    const t = ri / (RINGS - 1); // 0=top 1=bottom
+    const ringR = 0.06 + t * 0.72; // cone radius grows downward
+    const y3d = -0.80 + t * 1.55;
+    // more dots per ring as we go down
+    const dotsInRing = Math.floor(18 + t * 80);
+    for (let di = 0; di < dotsInRing; di++) {
+      const a = (di / dotsInRing) * Math.PI * 2;
+      // slight random scatter in radius for organic look
+      const scatter = ringR * (0.85 + Math.random() * 0.30);
       treePoints.push({
-        x: Math.cos(a) * r,
-        y: y + (Math.random()-0.5)*0.06,
-        z: Math.sin(a) * r,
-        size: 1.2 + (1-t)*1.8 + Math.random()*1.2,
-        alpha: 0.5 + Math.random()*0.5,
-        layer: t,
-        // pink hue per point
-        h: Math.floor(Math.random()*30), // 0–30 => pink range
+        x: Math.cos(a) * scatter,
+        y: y3d + (Math.random() - 0.5) * 0.025,
+        z: Math.sin(a) * scatter,
+        size: 0.8 + Math.random() * 1.1,
+        alpha: 0.55 + Math.random() * 0.45,
       });
     }
   }
-
-  // Floating dust
-  const dust = [];
-  for (let i = 0; i < 240; i++) {
+  // Add some inner fill dots so tree isn't hollow in middle
+  for (let i = 0; i < 400; i++) {
     const t = Math.random();
-    const a = Math.random()*Math.PI*2;
-    const r = 0.4 + Math.random()*1.0;
+    const ringR = 0.06 + t * 0.72;
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.random() * ringR * 0.6;
+    treePoints.push({
+      x: Math.cos(a) * r,
+      y: -0.80 + t * 1.55 + (Math.random()-0.5)*0.04,
+      z: Math.sin(a) * r,
+      size: 0.5 + Math.random() * 0.7,
+      alpha: 0.25 + Math.random() * 0.35,
+    });
+  }
+
+  // Floating dust particles drifting upward around the tree
+  const dust = [];
+  for (let i = 0; i < 180; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 0.3 + Math.random() * 1.1;
     dust.push({
-      x: Math.cos(a)*r*t, y: -0.9+t*1.7+(Math.random()-.5)*.3,
-      z: Math.sin(a)*r*t,
-      size: 0.5+Math.random()*1.3,
-      alpha: 0.12+Math.random()*0.45,
-      speed: 0.001+Math.random()*0.003,
-      drift: (Math.random()-.5)*0.007,
+      x: Math.cos(a) * r,
+      y: -0.9 + Math.random() * 2.0,
+      z: Math.sin(a) * r,
+      size: 0.4 + Math.random() * 1.0,
+      alpha: 0.08 + Math.random() * 0.38,
+      speed: 0.0008 + Math.random() * 0.0025,
+      drift: (Math.random() - 0.5) * 0.006,
     });
   }
 
-  // Orbiting pink roses
+  // Orbiting pink roses around the tree
   const roses = [];
-  for (let i = 0; i < 8; i++) {
-    const t = 0.2 + Math.random()*0.6;
+  for (let i = 0; i < 7; i++) {
+    const t = 0.15 + Math.random() * 0.65;
     roses.push({
-      baseAngle: (i/8)*Math.PI*2,
-      orbitR: 0.75 + Math.random()*0.25,
-      y: -0.6 + t*1.3,
-      size: 6 + Math.random()*6,
-      alpha: 0.75 + Math.random()*0.25,
-      speed: 0.28 + Math.random()*0.22,
+      baseAngle: (i / 7) * Math.PI * 2,
+      orbitR: 0.82 + Math.random() * 0.22,
+      y: -0.65 + t * 1.25,
+      size: 5 + Math.random() * 5,
+      alpha: 0.7 + Math.random() * 0.3,
+      speed: 0.25 + Math.random() * 0.2,
     });
   }
 
+  // Project 3D → 2D
   function project(px, py, pz) {
     const cosA = Math.cos(angle), sinA = Math.sin(angle);
-    const rx = px*cosA - pz*sinA;
-    const rz = px*sinA + pz*cosA;
-    const sc = 210/(4+rz);
-    return { sx: cx+rx*sc*W*0.5, sy: cy+py*sc*H*0.45, depth: rz, scale: sc };
+    const rx = px * cosA - pz * sinA;
+    const rz = px * sinA + pz * cosA;
+    const sc = 200 / (4 + rz);
+    return { sx: cx + rx * sc * W * 0.52, sy: cy + py * sc * H * 0.46, depth: rz, scale: sc };
   }
 
   function drawStar(sx, sy, r, al) {
     ctx.save(); ctx.globalAlpha = al;
-    ctx.shadowBlur = 22; ctx.shadowColor = '#ffb0cc';
+    ctx.shadowBlur = 24; ctx.shadowColor = '#ffaad0';
     ctx.beginPath();
-    for (let i=0;i<10;i++){
-      const a = (i*Math.PI/5)-Math.PI/2;
-      const rad = i%2===0 ? r : r*0.42;
-      i===0 ? ctx.moveTo(sx+Math.cos(a)*rad, sy+Math.sin(a)*rad)
-             : ctx.lineTo(sx+Math.cos(a)*rad, sy+Math.sin(a)*rad);
+    for (let i = 0; i < 10; i++) {
+      const a = (i * Math.PI / 5) - Math.PI / 2;
+      const rad = i % 2 === 0 ? r : r * 0.4;
+      i === 0 ? ctx.moveTo(sx + Math.cos(a)*rad, sy + Math.sin(a)*rad)
+              : ctx.lineTo(sx + Math.cos(a)*rad, sy + Math.sin(a)*rad);
     }
     ctx.closePath();
-    ctx.fillStyle = '#ffcce0';
+    ctx.fillStyle = '#ffd6ea';
     ctx.fill();
     ctx.restore();
   }
 
   function drawRose(x, y, size, al) {
-    function petal(cx,cy,ang,len,wid,col){
-      const cos=Math.cos(ang),sin=Math.sin(ang);
-      const tip={x:cx+cos*len,y:cy+sin*len};
-      const lc={x:cx+Math.cos(ang-.9)*wid,y:cy+Math.sin(ang-.9)*wid};
-      const rc={x:cx+Math.cos(ang+.9)*wid,y:cy+Math.sin(ang+.9)*wid};
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.quadraticCurveTo(lc.x,lc.y,tip.x,tip.y);
-      ctx.quadraticCurveTo(rc.x,rc.y,cx,cy);
-      ctx.fillStyle=col; ctx.fill();
+    function petal(ang, len, wid, col) {
+      const tip = { x: x + Math.cos(ang)*len, y: y + Math.sin(ang)*len };
+      const lc  = { x: x + Math.cos(ang-.85)*wid, y: y + Math.sin(ang-.85)*wid };
+      const rc  = { x: x + Math.cos(ang+.85)*wid, y: y + Math.sin(ang+.85)*wid };
+      ctx.beginPath(); ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(lc.x, lc.y, tip.x, tip.y);
+      ctx.quadraticCurveTo(rc.x, rc.y, x, y);
+      ctx.fillStyle = col; ctx.fill();
     }
     ctx.save();
-    ctx.globalAlpha = al*0.92;
-    ctx.shadowBlur = 14; ctx.shadowColor = 'rgba(255,180,210,0.8)';
-    for(let i=0;i<6;i++) petal(x,y,(i/6)*Math.PI*2,size*.9,size*.55,'rgba(255,210,228,0.72)');
-    for(let i=0;i<5;i++) petal(x,y,(i/5)*Math.PI*2+.3,size*.6,size*.38,'rgba(255,225,238,0.82)');
-    for(let i=0;i<4;i++) petal(x,y,(i/4)*Math.PI*2+.6,size*.35,size*.22,'rgba(255,240,248,0.92)');
-    ctx.beginPath(); ctx.arc(x,y,size*.18,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.95)';
-    ctx.shadowBlur=8; ctx.shadowColor='#ffb8d4';
+    ctx.globalAlpha = al * 0.9;
+    ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(255,160,200,0.75)';
+    for (let i=0;i<6;i++) petal((i/6)*Math.PI*2, size*.88, size*.52, 'rgba(255,200,225,0.70)');
+    for (let i=0;i<5;i++) petal((i/5)*Math.PI*2+.35, size*.58, size*.36, 'rgba(255,218,235,0.80)');
+    for (let i=0;i<4;i++) petal((i/4)*Math.PI*2+.7, size*.34, size*.20, 'rgba(255,235,245,0.90)');
+    ctx.beginPath(); ctx.arc(x, y, size*.16, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,245,250,0.98)';
+    ctx.shadowBlur = 6; ctx.shadowColor = '#ffb0d0';
     ctx.fill();
     ctx.restore();
   }
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    // Cream background matching site
-    ctx.fillStyle = '#fff8f9'; ctx.fillRect(0,0,W,H);
-    // Soft centre glow
-    const bg = ctx.createRadialGradient(cx,cy*0.7,0,cx,cy,W*0.7);
-    bg.addColorStop(0,'rgba(255,220,235,0.35)');
-    bg.addColorStop(1,'rgba(255,248,249,0)');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Deep rose-purple background (not pure black — warm dark pink)
+    ctx.fillStyle = '#1a0410'; ctx.fillRect(0, 0, W, H);
+    // Subtle radial glow in centre
+    const glow = ctx.createRadialGradient(cx, cy * 0.75, 0, cx, cy, W * 0.6);
+    glow.addColorStop(0, 'rgba(180, 50, 110, 0.12)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
     const all = [];
 
-    for(const p of treePoints){
-      const pr = project(p.x,p.y,p.z);
-      const depthFade = (pr.depth+1)/2;
-      all.push({ type:'dot', sx:pr.sx, sy:pr.sy, depth:pr.depth,
-        size:p.size*pr.scale*18, alpha:p.alpha*(0.55+depthFade*0.45), layer:p.layer });
+    // Tree ring dots
+    for (const p of treePoints) {
+      const pr = project(p.x, p.y, p.z);
+      const df = (pr.depth + 1) / 2; // depth fade 0→1
+      all.push({
+        type: 'tree',
+        sx: pr.sx, sy: pr.sy, depth: pr.depth,
+        size: Math.max(0.5, p.size * (0.6 + df * 0.5)),
+        alpha: p.alpha * (0.45 + df * 0.55),
+      });
     }
 
-    for(const d of dust){
-      d.y -= d.speed; d.x += d.drift;
-      if(d.y < -1.15){ d.y=0.9; d.x=(Math.random()-.5)*.35; }
-      const pr = project(d.x,d.y,d.z);
-      all.push({ type:'dust', sx:pr.sx, sy:pr.sy, depth:pr.depth,
-        size:d.size*pr.scale*13, alpha:d.alpha });
+    // Dust
+    for (const d of dust) {
+      d.y -= d.speed;
+      d.x += d.drift;
+      if (d.y < -1.1) { d.y = 0.95; d.x = (Math.random()-.5)*.4; }
+      const pr = project(d.x, d.y, d.z);
+      all.push({
+        type: 'dust',
+        sx: pr.sx, sy: pr.sy, depth: pr.depth,
+        size: Math.max(0.3, d.size * 0.65),
+        alpha: d.alpha,
+      });
     }
 
-    all.sort((a,b)=>a.depth-b.depth);
+    // Depth sort back→front
+    all.sort((a, b) => a.depth - b.depth);
 
-    for(const item of all){
-      if(item.sx<-20||item.sx>W+20||item.sy<-20||item.sy>H+20) continue;
+    for (const item of all) {
+      if (item.sx < -15 || item.sx > W+15 || item.sy < -15 || item.sy > H+15) continue;
       ctx.save();
-      ctx.globalAlpha = Math.min(item.alpha,1);
-      if(item.type==='dot'){
-        const g = ctx.createRadialGradient(item.sx,item.sy,0,item.sx,item.sy,item.size);
-        // light pink gradient
-        g.addColorStop(0,'rgba(255,210,228,0.98)');
-        g.addColorStop(0.45,'rgba(255,185,210,0.55)');
-        g.addColorStop(1,'rgba(255,170,205,0)');
-        ctx.fillStyle=g;
-        ctx.shadowBlur=item.size*1.6; ctx.shadowColor='rgba(255,160,200,0.35)';
-        ctx.beginPath(); ctx.arc(item.sx,item.sy,item.size,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha = Math.min(item.alpha, 1);
+      if (item.type === 'tree') {
+        ctx.shadowBlur = item.size * 2.8;
+        ctx.shadowColor = 'rgba(255,130,190,0.55)';
+        ctx.fillStyle = 'rgba(255,190,218,0.95)';
       } else {
-        ctx.fillStyle='rgba(255,190,215,0.55)';
-        ctx.shadowBlur=3; ctx.shadowColor='#ffb8d4';
-        ctx.beginPath(); ctx.arc(item.sx,item.sy,item.size,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 1.5;
+        ctx.shadowColor = 'rgba(255,170,210,0.3)';
+        ctx.fillStyle = 'rgba(255,210,232,0.45)';
       }
+      ctx.beginPath();
+      ctx.arc(item.sx, item.sy, item.size, 0, Math.PI * 2);
+      ctx.fill();
       ctx.restore();
     }
 
-    for(const r of roses){
-      const a = r.baseAngle + angle*r.speed;
-      const rx = Math.cos(a)*r.orbitR, rz = Math.sin(a)*r.orbitR;
-      const pr = project(rx,r.y,rz);
-      if(pr.sx>0&&pr.sx<W&&pr.sy>0&&pr.sy<H){
-        const da = (pr.depth+1.5)/3;
-        drawRose(pr.sx,pr.sy,r.size*pr.scale*14,r.alpha*da);
+    // Orbiting roses
+    for (const r of roses) {
+      const a = r.baseAngle + angle * r.speed;
+      const pr = project(Math.cos(a)*r.orbitR, r.y, Math.sin(a)*r.orbitR);
+      if (pr.sx > 0 && pr.sx < W && pr.sy > 0 && pr.sy < H) {
+        const da = Math.max(0.2, (pr.depth + 1.5) / 3);
+        drawRose(pr.sx, pr.sy, r.size * pr.scale * 11, r.alpha * da);
       }
     }
 
-    const top = project(0,-0.88,0);
-    drawStar(top.sx,top.sy,13,0.95);
+    // Star on top
+    const top = project(0, -0.83, 0);
+    drawStar(top.sx, top.sy, 12, 0.95);
 
-    // Top halo
+    // Breathing halo at top
     ctx.save();
-    ctx.globalAlpha = 0.22+0.08*Math.sin(Date.now()/600);
-    const halo = ctx.createRadialGradient(top.sx,top.sy,0,top.sx,top.sy,38);
-    halo.addColorStop(0,'rgba(255,180,210,0.7)');
-    halo.addColorStop(1,'rgba(255,200,225,0)');
-    ctx.fillStyle=halo;
-    ctx.beginPath(); ctx.arc(top.sx,top.sy,38,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 0.18 + 0.07 * Math.sin(Date.now() / 550);
+    const halo = ctx.createRadialGradient(top.sx, top.sy, 0, top.sx, top.sy, 35);
+    halo.addColorStop(0, 'rgba(255,150,200,0.75)');
+    halo.addColorStop(1, 'rgba(255,150,200,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(top.sx, top.sy, 35, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
     angle += 0.004;
