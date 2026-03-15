@@ -6,7 +6,7 @@
 <title>For You · Only You</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet"/>
 <style>
-/* 样式部分保持你原本的精致设计 */
+/* 核心样式：确保长文本阅读体验 */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
 body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 130% 110% at 50% 0%,#fff0f5 0%,#fde8f0 22%,#faf0f8 52%,#f5f0ff 78%,#f0f5ff 100%)}
@@ -14,42 +14,31 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
 #phase1{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
 .p1-eyebrow{font-size:.72rem;letter-spacing:.45em;text-transform:uppercase;color:#c9a0b8;opacity:0;transform:translateY(10px);margin-bottom:1.2rem}
 .p1-title{font-size:clamp(3rem,9vw,6.5rem);font-weight:300;font-style:italic;line-height:1.05;text-align:center;color:#9a6080;text-shadow:0 2px 40px rgba(200,140,180,.35);opacity:0;transform:translateY(20px)}
-.p1-title em{color:#c07090;font-style:normal}
 .p1-sub{font-family:'Noto Serif SC',serif;font-size:clamp(.85rem,1.8vw,1.05rem);font-weight:300;letter-spacing:.2em;color:#b898aa;margin-top:1.4rem;opacity:0;transform:translateY(10px)}
 .p1-divider{width:1px;height:0;margin:2rem auto 0;background:linear-gradient(to bottom,transparent,#c9a0b8,transparent)}
 #click-prompt{position:fixed;bottom:11vh;left:50%;transform:translateX(-50%);z-index:25;cursor:pointer;pointer-events:none;font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:#c9a0b8;opacity:0;animation:breathe 2.2s ease-in-out infinite}
 @keyframes breathe{0%,100%{opacity:.4}50%{opacity:.9}}
 #letter-overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;padding:2rem;background:rgba(255,240,248,0)}
 #letter-overlay.active{pointer-events:auto}
-.letter-scroll{width:min(660px,92vw);max-height:82vh;overflow-y:auto;background:linear-gradient(165deg,#fffcfe 0%,#fef5f8 50%,#fdf0f5 100%);border:1px solid rgba(210,170,190,.35);padding:clamp(2rem,5vw,3.8rem) clamp(2rem,6vw,4.5rem);position:relative;transform:translateY(50px) scale(.94);box-shadow:0 40px 100px rgba(180,100,140,.12),0 0 0 1px rgba(220,180,200,.2),inset 0 1px 0 rgba(255,255,255,.8);}
-.letter-header{text-align:center;margin-bottom:2rem}
-.letter-greeting{font-style:italic;font-size:1.22rem;color:#7a4060;margin-bottom:1.5rem}
-.letter-body{font-family:'Noto Serif SC',serif;font-size:.93rem;line-height:2.25;color:#5a3050}
-.letter-body p{margin-bottom:1.2rem;text-indent:2em}
-.letter-footer-quote{margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(200,160,180,.22);text-align:center;font-style:italic;font-size:.92rem;color:#a07090;letter-spacing:.08em}
-.letter-signoff{text-align:right;margin-top:2rem;font-style:italic;font-size:1rem;color:#7a4060}
-.letter-signoff span{display:block;font-size:1.3rem;color:#c05878;margin-top:.3rem}
-.letter-close-btn{display:block;margin:2rem auto 0;background:rgba(240,200,220,.2);border:1px solid rgba(210,170,190,.4);color:#a07090;padding:1rem 3rem;cursor:pointer;font-size:.88rem;letter-spacing:.3em;text-transform:uppercase;border-radius:2px;min-width:200px}
+.letter-scroll{width:min(660px,92vw);max-height:82vh;overflow-y:auto;background:linear-gradient(165deg,#fffcfe 0%,#fef5f8 50%,#fdf0f5 100%);border:1px solid rgba(210,170,190,.35);padding:clamp(2rem,5vw,3.8rem) clamp(2rem,6vw,4.5rem);position:relative;transform:translateY(50px) scale(.94);box-shadow:0 40px 100px rgba(180,100,140,.12),0 0 0 1px rgba(220,180,200,.2)}
+.letter-body{font-family:'Noto Serif SC',serif;font-size:.93rem;line-height:2.25;color:#5a3050;text-align:justify}
+.letter-body p{margin-bottom:1.5rem;text-indent:2em}
 #rose-section{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0}
-#rose-three-wrap{width:min(400px,88vw);height:min(520px,90vw)}
-.rose-poem{margin-top:2.2rem;text-align:center;font-style:italic;font-size:clamp(.9rem,2vw,1.08rem);line-height:2.5;color:#a07890;max-width:440px}
-
-/* Password Gate 样式 */
-#gate{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse 130% 110% at 50% 0%,#fff0f5 0%,#fde8f0 22%,#faf0f8 52%,#f5f0ff 78%,#f0f5ff 100%);padding:2rem;text-align:center;transition:opacity .8s ease;}
-.gate-question{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.1rem,3vw,1.5rem);color:#9a6080;margin-bottom:.6rem;}
-.gate-input{width:min(340px,85vw);padding:.85rem 1.4rem;border:1.5px solid rgba(210,170,190,.5);border-radius:3px;text-align:center;outline:none;}
-.gate-btn{display:block;margin:1.2rem auto 0;padding:.7rem 2.8rem;background:rgba(240,200,220,.25);border:1px solid rgba(210,170,190,.5);cursor:pointer;color:#a07090;text-transform:uppercase;letter-spacing:.3em;}
-.gate-error{margin-top:1rem;font-style:italic;font-size:.88rem;color:#c05878;opacity:0;transition:opacity .4s;}
+#rose-three-wrap{width:min(450px,90vw);height:min(550px,90vw)}
+.rose-poem{margin-top:1.5rem;text-align:center;font-style:italic;color:#a07890;font-size:1rem;line-height:1.8}
+#gate{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff0f5;padding:2rem;text-align:center;}
+.gate-input{width:min(340px,85vw);padding:.85rem;border:1.5px solid #d2aab6;border-radius:3px;text-align:center;outline:none;}
+.gate-btn{margin-top:1.2rem;padding:.7rem 2.8rem;background:rgba(240,200,220,.25);border:1px solid #d2aab6;cursor:pointer;color:#a07090;}
+.gate-error{margin-top:1rem;color:#c05878;font-size:.85rem;opacity:0;transition:opacity .4s}
 .gate-error.show{opacity:1}
 </style>
 </head>
 <body>
 
 <div id="gate">
-  <div style="font-size:2.2rem;margin-bottom:1.5rem;">🌸</div>
-  <p class="gate-question">你还记得我第一次约你出来<br/>一起看的电影叫什么名字吗？</p>
-  <p style="font-size:.78rem;color:#c9a0b8;margin-bottom:2rem;">只有你知道答案 · Only you would know</p>
-  <input class="gate-input" id="gate-input" type="text" placeholder="在这里输入…" autocomplete="off"/>
+  <div style="font-size:2rem;margin-bottom:1rem;">🌸</div>
+  <p style="font-style:italic;color:#9a6080;margin-bottom:1.5rem;">你还记得我第一次约你出来<br/>一起看的电影叫什么名字吗？</p>
+  <input class="gate-input" id="gate-input" type="text" placeholder="输入电影名..."/>
   <button class="gate-btn" id="gate-btn">进入 · Enter</button>
   <p class="gate-error" id="gate-error">答案不对哦，再想想 🌸</p>
 </div>
@@ -63,16 +52,11 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
   <div class="p1-divider" id="p1-d"></div>
 </div>
 
-<div id="click-prompt" role="button">✦ 点击开启 ✦</div>
+<div id="click-prompt">✦ 点击开启 ✦</div>
 
 <div id="letter-overlay">
   <div class="letter-scroll" id="letter-scroll">
-    <div class="letter-header">
-      <p style="text-transform:uppercase; color:#c09ab0; font-size:.72rem; letter-spacing:.35em;">一封写给你的信 · A Letter For You</p>
-      <div style="font-size:1.4rem; margin:1rem 0;">💌</div>
-      <p style="font-style:italic; font-size:.76rem; color:#c09ab0;">一个普通却又不普通的日子</p>
-    </div>
-    <p class="letter-greeting">抒均，</p>
+    <p style="font-style:italic;font-size:1.3rem;color:#7a4060;margin-bottom:2rem;">抒均，</p>
     <div class="letter-body">
       <p>有些感情，不是不想说，而是说出口的那一刻，它就会变轻。所以我选择把它写进代码——藏在这些只有你看得见的地方，让它以它本来的重量，完整地落在你面前。</p> 
 
@@ -104,18 +88,14 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
 
       <p>所以在消失之前——<em style="color:#c05878;font-style:italic">抒均，我喜欢你。</em></p>
     </div>
-    <div class="letter-footer-quote">
-      粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>
-      它不问结局，只是静静地，把这份心意<em>如实地交给你</em>。
-    </div>
-    <div class="letter-signoff">带着一点紧张，很多真心<br/><span>— 喜欢 Sj 的男孩纸 🌸</span></div>
-    <button class="letter-close-btn" id="letter-close">继续 · Continue</button>
+    <div style="text-align:right;margin-top:2rem;font-style:italic;color:#7a4060;">带着一点紧张，很多真心<br/><span style="color:#c05878;font-size:1.2rem;">— 喜欢 Sj 的男孩纸 🌸</span></div>
+    <button id="letter-close" style="display:block;margin:2rem auto 0;padding:.8rem 2.5rem;border:1px solid #d2aab6;background:none;color:#a07090;cursor:pointer;">继续 · Continue</button>
   </div>
 </div>
 
 <div id="rose-section">
   <div id="rose-three-wrap"></div>
-  <div class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></div>
+  <p class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></p>
 </div>
 
 <audio id="bgm" loop><source src="5_6172476352109747894.mp3" type="audio/mpeg"/></audio>
@@ -124,160 +104,89 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
-/* 1. 主场景逻辑 (漂浮物、信封) */
-const mainCanvas = document.getElementById('three-canvas');
-const mainRenderer = new THREE.WebGLRenderer({canvas: mainCanvas, antialias: true, alpha: true});
-mainRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-mainRenderer.setSize(innerWidth, innerHeight);
-const mainScene = new THREE.Scene();
-const mainCamera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 200);
-mainCamera.position.z = 12;
-
-// 主场景灯光
-mainScene.add(new THREE.AmbientLight(0xfff0f8, 1.0));
-const sunL = new THREE.DirectionalLight(0xffffff, 1.5); sunL.position.set(5, 5, 5); mainScene.add(sunL);
-
-/* 漂浮物组 (爱心、星星等) */
-const floatGroup = new THREE.Group(); mainScene.add(floatGroup);
-function makeHeart(s, col) {
-  const sh = new THREE.Shape();
-  sh.moveTo(0, s * .5);
-  sh.bezierCurveTo(s * .5, s, s, s * .8, s, s * .4);
-  sh.bezierCurveTo(s, 0, s * .5, -s * .2, 0, -s * .5);
-  sh.bezierCurveTo(-s * .5, -s * .2, -s, 0, -s, s * .4);
-  sh.bezierCurveTo(-s, s * .8, -s * .5, s, 0, s * .5);
-  const g = new THREE.ExtrudeGeometry(sh, {depth: s * .2, bevelEnabled: true, bevelSize: 0.05});
-  g.center();
-  return new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({color: col, metalness: 0.1, roughness: 0.2, transmission: 0.5, transparent: true}));
-}
-const candyCols = [0xffb5c8, 0xffd6e0, 0xb5d8ff, 0xd4f0c8];
-for(let i=0; i<25; i++) {
-  const h = makeHeart(0.3, candyCols[i % 4]);
-  h.position.set((Math.random()-0.5)*15, (Math.random()-0.5)*15, (Math.random()-0.5)*10);
-  floatGroup.add(h);
-}
-
-/* 2. 密码锁逻辑 */
-(function(){
-  const gate = document.getElementById('gate');
-  const input = document.getElementById('gate-input');
-  const btn = document.getElementById('gate-btn');
-  const errMsg = document.getElementById('gate-error');
-  const ANSWERS = ['zootopia 2','zootopia2','疯狂动物城2','疯狂动物园2'];
-
-  function check(){
-    const val = input.value.trim().toLowerCase();
-    if(ANSWERS.includes(val)){
-      gsap.to(gate, {opacity: 0, duration: 0.8, onComplete: () => {gate.style.display='none'; startExperience();}});
-    } else {
-      errMsg.classList.add('show');
-      setTimeout(()=>errMsg.classList.remove('show'), 2000);
-    }
-  }
-  btn.addEventListener('click', check);
-  input.addEventListener('keydown', e => {if(e.key==='Enter') check();});
-})();
-
-/* 3. 核心流程控制 */
-const tl = gsap.timeline({paused: true});
-function startExperience() {
-  tl.to('#p1-ey', {opacity: 1, y: 0, duration: 1})
-    .to('#p1-t', {opacity: 1, y: 0, duration: 1.2}, "-=0.5")
-    .to('#p1-s', {opacity: 1, y: 0, duration: 1}, "-=0.5")
-    .to('#p1-d', {height: 60, duration: 0.8})
-    .to('#phase1', {opacity: 0, y: -20, duration: 1, delay: 2})
-    .add(() => {
-      gsap.to('#click-prompt', {opacity: 1, pointerEvents: 'auto', duration: 1});
-    });
-  tl.play();
-}
-
-/* 4. 信件开启与玫瑰展示 */
-document.getElementById('click-prompt').addEventListener('click', () => {
-  const bgm = document.getElementById('bgm');
-  bgm.play();
-  gsap.to('#click-prompt', {opacity: 0, duration: 0.5});
-  const lo = document.getElementById('letter-overlay');
-  lo.classList.add('active');
-  gsap.to(lo, {opacity: 1, duration: 1});
-  gsap.to('#letter-scroll', {y: 0, scale: 1, duration: 1.2, ease: "back.out"});
-});
-
-document.getElementById('letter-close').addEventListener('click', () => {
-  gsap.to('#letter-overlay', {opacity: 0, duration: 0.8, onComplete: () => {
-    document.getElementById('letter-overlay').style.display = 'none';
-    showRose();
-  }});
-});
-
-/* 5. 最终 3D 玫瑰场景 (GLB 加载) */
-function showRose() {
-  const rSec = document.getElementById('rose-section');
-  gsap.to(rSec, {opacity: 1, duration: 1.5});
-  buildRoseScene();
-}
+// 1. 动态加载 GLTFLoader
+const script = document.createElement('script');
+script.src = 'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+document.head.appendChild(script);
 
 let roseModel;
 function buildRoseScene() {
-  const wrap = document.getElementById('rose-three-wrap');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 1000);
-  camera.position.set(0, 1.5, 8);
-  const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-  renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.2;
-  wrap.appendChild(renderer.domElement);
+    const wrap = document.getElementById('rose-three-wrap');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.1, 1000);
+    camera.position.set(0, 1.2, 7);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(5, 10, 5); scene.add(sun);
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    wrap.appendChild(renderer.domElement);
 
-  // 动态加载 GLTFLoader 脚本
-  const loaderScript = document.createElement('script');
-  loaderScript.src = 'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-  loaderScript.onload = () => {
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    sun.position.set(5, 10, 5);
+    scene.add(sun);
+
     const loader = new THREE.GLTFLoader();
+    // 强制加载外部模型，无保底代码
     loader.load('./rose.glb', (gltf) => {
-      roseModel = gltf.scene;
-      roseModel.traverse(child => {
-        if(child.isMesh) {
-          child.material = new THREE.MeshPhysicalMaterial({
-            color: 0xffd1dc, metalness: 0.6, roughness: 0.2, clearcoat: 1, iridescence: 1, side: THREE.DoubleSide
-          });
-        }
-      });
-      const box = new THREE.Box3().setFromObject(roseModel);
-      const size = box.getSize(new THREE.Vector3());
-      const scale = 5.5 / Math.max(size.x, size.y, size.z);
-      roseModel.scale.setScalar(scale);
-      scene.add(roseModel);
-    }, undefined, (e) => {
-      alert("错误：无法找到 rose.glb 文件。请确认文件名完全匹配并已上传！");
+        roseModel = gltf.scene;
+        roseModel.traverse(child => {
+            if(child.isMesh) {
+                child.material = new THREE.MeshPhysicalMaterial({
+                    color: 0xf0d0dc, metalness: 0.9, roughness: 0.15, iridescence: 1.0, side: THREE.DoubleSide
+                });
+            }
+        });
+        const box = new THREE.Box3().setFromObject(roseModel);
+        const center = box.getCenter(new THREE.Vector3());
+        roseModel.position.sub(center);
+        scene.add(roseModel);
+    }, (xhr) => {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+    }, (err) => {
+        alert("模型加载失败：请检查 rose.glb 是否与 index.html 在同一文件夹下。");
     });
-  };
-  document.head.appendChild(loaderScript);
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if(roseModel) roseModel.rotation.y += 0.01;
-    renderer.render(scene, camera);
-  }
-  animate();
+    function animate() {
+        requestAnimationFrame(animate);
+        if(roseModel) roseModel.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+    animate();
 }
 
-// 主渲染循环
-function mainAnimate() {
-  requestAnimationFrame(mainAnimate);
-  floatGroup.rotation.y += 0.002;
-  mainRenderer.render(mainScene, mainCamera);
-}
-mainAnimate();
+/* 交互逻辑 */
+const tl = gsap.timeline({paused:true});
+tl.to('#p1-ey',{opacity:1, y:0, duration:1}).to('#p1-t',{opacity:1, y:0},"-=0.5").to('#p1-s',{opacity:1, y:0},"-=0.5").to('#p1-d',{height:60});
 
-window.addEventListener('resize', () => {
-  mainRenderer.setSize(innerWidth, innerHeight);
-  mainCamera.aspect = innerWidth / innerHeight;
-  mainCamera.updateProjectionMatrix();
-});
+document.getElementById('gate-btn').onclick = () => {
+    const val = document.getElementById('gate-input').value.trim().toLowerCase();
+    if(['zootopia 2','zootopia2','疯狂动物城2'].includes(val)) {
+        gsap.to('#gate', {opacity:0, onComplete:()=> {
+            document.getElementById('gate').style.display='none';
+            tl.play();
+            setTimeout(()=> gsap.to('#click-prompt',{opacity:1, pointerEvents:'auto'}), 4000);
+        }});
+    } else {
+        document.getElementById('gate-error').classList.add('show');
+    }
+};
+
+document.getElementById('click-prompt').onclick = () => {
+    const audio = document.getElementById('bgm');
+    audio.volume = 0.4;
+    audio.play();
+    gsap.to('#letter-overlay', {opacity:1, pointerEvents:'auto', duration:1});
+};
+
+document.getElementById('letter-close').onclick = () => {
+    gsap.to('#letter-overlay', {opacity:0, onComplete:()=> {
+        document.getElementById('letter-overlay').style.display='none';
+        gsap.to('#rose-section', {opacity:1, duration:1.5});
+        buildRoseScene();
+    }});
+};
 </script>
 </body>
 </html>
