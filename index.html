@@ -395,35 +395,46 @@ function buildRoseScene(){
     (gltf)=>{
       loadDiv.remove();
       const model=gltf.scene;
+
+      // Step 1: scale first
       const box=new THREE.Box3().setFromObject(model);
       const size=new THREE.Vector3(); box.getSize(size);
       model.scale.setScalar(4.8/Math.max(size.x,size.y,size.z));
+
+      // Step 2: get EXACT center after scaling
       const box2=new THREE.Box3().setFromObject(model);
       const center=new THREE.Vector3(); box2.getCenter(center);
-      model.position.sub(center);
+
+      // Step 3: pivot technique — offset model inside pivot
+      // so the rotation axis passes through model's geometric center
+      const pivot=new THREE.Group();
+      model.position.set(-center.x, -center.y, -center.z);
+      pivot.add(model);
+
+      // Step 4: rg only rotates, never scales or moves
+      rg.add(pivot);
+
       model.traverse(child=>{
         if(child.isMesh){
           child.material=makeMat();
-          child.castShadow=true; child.receiveShadow=true;
+          child.castShadow=false;
+          child.receiveShadow=false;
         }
       });
-      rg.add(model);
     },
     (xhr)=>{ if(xhr.total>0) loadDiv.textContent=`Loading ${Math.round(xhr.loaded/xhr.total*100)}% 🌹`; },
     (err)=>{ loadDiv.textContent='无法加载 rose.glb 😢'; console.error('GLTFLoader error',err); }
   );
 
-  /* Render loop — pure time-based, zero lerp, zero accumulation = silkiest */
+  /* Render loop — pure time-based self rotation */
   const startTS = performance.now();
-
   (function loop(){
     requestAnimationFrame(loop);
-    const t = (performance.now() - startTS) * 0.001; // seconds, never drifts
+    const t = (performance.now() - startTS) * 0.001;
 
-    // Direct assignment — no lerp, no delta, no accumulation
-    // rotation.y is always exactly where it should be for this moment in time
+    // ONLY rotate Y — no scale change on rg, no position change
+    // This guarantees pure self-rotation with zero drift
     rg.rotation.y = t * 0.30;
-    rg.scale.setScalar(1 + 0.008 * Math.sin(t * 1.1));
 
     rFloaters.forEach(f=>{
       f.obj.position.y = f.baseY + Math.sin(t * f.fs * 60 + f.fo) * f.fa;
