@@ -346,12 +346,12 @@ function buildRoseScene(){
     const m=new THREE.MeshPhysicalMaterial({
       color:        new THREE.Color(0xFFFAFA), // very light blush white
       metalness:    0.1,   // high metal — now has envmap to reflect ✅
-      roughness:    0.15,  // mirror smooth
+      roughness:    0.05,  // mirror smooth
       clearcoat:    1.0,
-      clearcoatRoughness: 0.05,
+      clearcoatRoughness: 0.03,
       iridescence:  1.0,
-      iridescenceIOR: 1.5,
-      iridescenceThicknessRange: [100, 400],
+      iridescenceIOR: 2.0,
+      iridescenceThicknessRange: [100, 800],
       envMapIntensity: 1.8, // amplify the envmap reflections
       side: THREE.DoubleSide,
     });
