@@ -203,6 +203,7 @@ const sealMat=new THREE.MeshPhysicalMaterial({color:0xf0b0c8,metalness:.2,roughn
 const sealMesh=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.045,32),sealMat);sealMesh.rotation.x=Math.PI/2;sealMesh.position.set(0,-.55,.08);flapGroup.add(sealMesh);
 envGroup.position.set(0,14,0);envGroup.visible=false;
 
+let mFrame=0;
 let mainRafId;
 (function mainLoop(){mainRafId=requestAnimationFrame(mainLoop);mFrame++;const t=mFrame*.016;
 floaters.forEach(f=>{f.obj.position.y=f.baseY+Math.sin(t*f.fs*60+f.fo)*f.fa;f.obj.rotation.x+=f.rs.x;f.obj.rotation.y+=f.rs.y;f.obj.rotation.z+=f.rs.z});
@@ -248,7 +249,8 @@ cpEl.addEventListener('click',()=>{if(promptFired)return;promptFired=true;openEn
 
 let closeFired=false;
 function handleClose(){
-  if(closeFired)return;closeFired=true;cancelAnimationFrame(mainRafId);
+  if(closeFired)return;closeFired=true;
+  cancelAnimationFrame(mainRafId);
   const lo=document.getElementById('letter-overlay');
   gsap.to(lo,{opacity:0,duration:.9,ease:'power2.in',onComplete:()=>{lo.classList.remove('active');lo.style.display='none';envGroup.visible=false}});
   gsap.to(floatGroup,{opacity:0,duration:.8});
