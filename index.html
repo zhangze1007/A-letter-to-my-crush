@@ -268,7 +268,7 @@ closeBtnEl.addEventListener('click',handleClose);
 
 document.addEventListener('click',()=>{const b=document.getElementById('bgm');if(b&&b.paused){b.volume=.35;b.play().catch(()=>{})}},{once:true});
 
-/* ── Rose Scene: GLTFLoader + iridescent material ── */
+/* ── Rose Scene: PMREMGenerator envmap + crystal material ── */
 function buildRoseScene(){
   const wrap=document.getElementById('rose-three-wrap');
   if(wrap.querySelector('canvas'))return;
@@ -278,14 +278,15 @@ function buildRoseScene(){
 
   const rr=new THREE.WebGLRenderer({antialias:true,alpha:true});
   rr.setSize(W,H); rr.setPixelRatio(Math.min(devicePixelRatio,2));
-  rr.setClearColor(0x000000,0); // fully transparent — shows gradient bg
+  rr.setClearColor(0x000000,0);
+  rr.toneMapping=THREE.ACESFilmicToneMapping;
+  rr.toneMappingExposure=1.4;
   rr.shadowMap.enabled=true;
-  rr.toneMapping=THREE.ACESFilmicToneMapping; rr.toneMappingExposure=1.2;
   rr.domElement.style.width='100%'; rr.domElement.style.height='100%';
   wrap.style.position='relative'; wrap.appendChild(rr.domElement);
 
   window.addEventListener('resize',()=>{
-    const nW=wrap.clientWidth||W, nH=wrap.clientHeight||H;
+    const nW=wrap.clientWidth||W,nH=wrap.clientHeight||H;
     rr.setSize(nW,nH); rc.aspect=nW/nH; rc.updateProjectionMatrix();
   });
 
@@ -293,54 +294,91 @@ function buildRoseScene(){
   const rc=new THREE.PerspectiveCamera(36,W/H,0.1,100);
   rc.position.set(0,1.5,8); rc.lookAt(0,0,0);
 
-  // Soft warm lights — enough to see petal detail without metallic glare
-  rs.add(new THREE.AmbientLight(0xfff0f8, 0.8));
-  const kl=new THREE.DirectionalLight(0xffffff,3.5); kl.position.set(4,10,6); kl.castShadow=true; rs.add(kl);
-  const fl=new THREE.DirectionalLight(0xffe8f4,1.8); fl.position.set(-4,3,5); rs.add(fl);
-  const bl=new THREE.DirectionalLight(0xf8f0ff,2.5); bl.position.set(0,5,-6); rs.add(bl);
-  const lA=new THREE.PointLight(0xff88bb,4.0,20); rs.add(lA);
-  const lB=new THREE.PointLight(0x88bbff,3.5,18); rs.add(lB);
-  const lC=new THREE.PointLight(0xffd0e8,2.0,14); rs.add(lC);
+  /* ══════════════════════════════════════════════
+     STEP 1: Build a colourful "fake world" scene
+     then bake it into an envmap via PMREMGenerator.
+     This is what gives metallic materials something
+     beautiful to reflect — without it they go black.
+  ══════════════════════════════════════════════ */
+  const envScene = new THREE.Scene();
 
-  // ── Iridescent metallic material using native Three.js r158 iridescence ──
+  // Fill the fake world with coloured sphere lights
+  // These become the "sky" the rose reflects
+  const envColors = [
+    [0xffb8cc, 8,  4,  3],   // warm pink top-right
+    [0xffd6e8, -6, 5,  2],   // blush left
+    [0xc8b4ff, 0,  3, -5],   // soft purple behind
+    [0xb8e0ff, 5, -2, -3],   // sky blue right
+    [0xfff0c8, -4,-3,  4],   // warm cream bottom-left
+    [0xffe4f0, 0,  8,  0],   // white-pink top
+  ];
+  envColors.forEach(([col, x, y, z])=>{
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(1.5, 16, 12),
+      new THREE.MeshBasicMaterial({color: col, side: THREE.BackSide})
+    );
+    mesh.position.set(x, y, z);
+    envScene.add(mesh);
+  });
+
+  // Bake envScene → PMREM cubemap → assign to main scene
+  const pmrem = new THREE.PMREMGenerator(rr);
+  pmrem.compileEquirectangularShader();
+  const envRT = pmrem.fromScene(envScene, 0.02);
+  rs.environment = envRT.texture;   // every material now reflects this world
+  rs.background  = null;            // keep background transparent
+
+  /* ══════════════════════════════════════════════
+     STEP 2: Scene lights (directional, for shading)
+  ══════════════════════════════════════════════ */
+  rs.add(new THREE.AmbientLight(0xfff0f8, 1.2));
+  const kl=new THREE.DirectionalLight(0xffffff,2.0); kl.position.set(4,10,6); rs.add(kl);
+  const fl=new THREE.DirectionalLight(0xffe0f0,1.5); fl.position.set(-5,3,4); rs.add(fl);
+  const bl=new THREE.DirectionalLight(0xf0f0ff,1.5); bl.position.set(0,4,-6); rs.add(bl);
+  const lA=new THREE.PointLight(0xff88bb,3.0,18); rs.add(lA);
+  const lB=new THREE.PointLight(0xaabbff,2.5,16); rs.add(lB);
+  const lC=new THREE.PointLight(0xffe8ff,2.0,14); rs.add(lC);
+
+  /* ══════════════════════════════════════════════
+     STEP 3: Crystal material
+     Now that scene.environment is set, metalness
+     works correctly and reflects the coloured world.
+     Result: shimmering pink-purple-gold crystal.
+  ══════════════════════════════════════════════ */
   const allMats=[];
   function makeMat(){
     const m=new THREE.MeshPhysicalMaterial({
-      color:       new THREE.Color(0xEFC0B0), // warm peachy pink (CBCC 0.6YR8/4 series)
-      metalness:   1.0,
-      roughness:   0.15,
-      clearcoat:   1.0,
+      color:        new THREE.Color(0xFFE8EC), // very light blush white
+      metalness:    0.9,   // high metal — now has envmap to reflect ✅
+      roughness:    0.08,  // mirror smooth
+      clearcoat:    1.0,
       clearcoatRoughness: 0.05,
-      iridescence: 1.0,
+      iridescence:  1.0,
       iridescenceIOR: 1.8,
-      iridescenceThicknessRange: [100, 400],
+      iridescenceThicknessRange: [120, 420],
+      envMapIntensity: 1.8, // amplify the envmap reflections
       side: THREE.DoubleSide,
     });
     allMats.push(m); return m;
   }
 
-  // Candy floaters — placed on LEFT and RIGHT sides only, not near centre rose
+  /* ══════════════════════════════════════════════
+     STEP 4: Floaters — left & right sides only
+  ══════════════════════════════════════════════ */
   const roseCandyCols=[0xffb5c8,0xffd6e0,0xb5d8ff,0xd4f0c8,0xffe0b5,0xe8b5ff,0xffefb5];
   function rJellyMat(col){return new THREE.MeshPhysicalMaterial({color:col,metalness:0,roughness:.05,transmission:.75,thickness:.8,ior:1.45,clearcoat:1,clearcoatRoughness:.02,transparent:true,side:THREE.DoubleSide})}
   function rMakeHeart(s,col){const sh=new THREE.Shape();sh.moveTo(0,s*.5);sh.bezierCurveTo(s*.5,s,s,s*.8,s,s*.4);sh.bezierCurveTo(s,0,s*.5,-s*.2,0,-s*.5);sh.bezierCurveTo(-s*.5,-s*.2,-s,0,-s,s*.4);sh.bezierCurveTo(-s,s*.8,-s*.5,s,0,s*.5);const g=new THREE.ExtrudeGeometry(sh,{depth:s*.25,bevelEnabled:true,bevelSize:.04*s,bevelSegments:3});g.center();return new THREE.Mesh(g,rJellyMat(col))}
   function rMakeStar(s,col){const sh=new THREE.Shape();for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,r=i%2===0?s:s*.42;i===0?sh.moveTo(Math.cos(a)*r,Math.sin(a)*r):sh.lineTo(Math.cos(a)*r,Math.sin(a)*r)}sh.closePath();const g=new THREE.ExtrudeGeometry(sh,{depth:s*.2,bevelEnabled:true,bevelSize:.03*s,bevelSegments:3});g.center();return new THREE.Mesh(g,rJellyMat(col))}
-  function rMakeBox(s,col){const g=new THREE.BoxGeometry(s,s*.7,s*.4);return new THREE.Mesh(g,rJellyMat(col))}
+  function rMakeBox(s,col){return new THREE.Mesh(new THREE.BoxGeometry(s,s*.7,s*.4),rJellyMat(col))}
   const rMakers=[(c)=>rMakeHeart(.22,c),(c)=>rMakeStar(.18,c),(c)=>rMakeBox(.28,c),(c)=>rMakeBox(.22,c)];
   const rFloaters=[];
   for(let i=0;i<20;i++){
     const col=roseCandyCols[i%roseCandyCols.length];
     const obj=rMakers[i%rMakers.length](col);
-    // Place on left side (i<10) or right side (i>=10), x offset at least 3.5 from centre
-    const side = i < 10 ? -1 : 1;
-    const xMin = 3.5, xMax = 6.5;
-    obj.position.set(
-      side * (xMin + Math.random()*(xMax-xMin)),
-      (Math.random()-.5)*7,
-      (Math.random()-.5)*2 - 0.5
-    );
+    const side=i<10?-1:1;
+    obj.position.set(side*(3.8+Math.random()*2.8),(Math.random()-.5)*7,(Math.random()-.5)*2-.5);
     obj.rotation.set(Math.random()*Math.PI*2,Math.random()*Math.PI*2,Math.random()*Math.PI*2);
-    rFloaters.push({obj,
-      fs:.0004+Math.random()*.0006,fa:.15+Math.random()*.3,fo:Math.random()*Math.PI*2,
+    rFloaters.push({obj,fs:.0004+Math.random()*.0006,fa:.15+Math.random()*.3,fo:Math.random()*Math.PI*2,
       rs:new THREE.Vector3((Math.random()-.5)*.007,(Math.random()-.5)*.009,(Math.random()-.5)*.005),
       baseY:obj.position.y});
     rs.add(obj);
@@ -348,27 +386,24 @@ function buildRoseScene(){
 
   const rg=new THREE.Group(); rs.add(rg);
 
-  // Loading indicator
+  /* Loading indicator */
   const loadDiv=document.createElement('div');
   loadDiv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Cormorant Garamond",serif;font-style:italic;color:#c9a0b8;font-size:1rem;letter-spacing:.2em;pointer-events:none';
   loadDiv.textContent='Loading 🌹';
   wrap.appendChild(loadDiv);
 
-  // Load rose.glb — GLTFLoader already available via ES module import
+  /* Load rose.glb — preserve geometry, replace material */
   new GLTFLoader().load(
     './rose.glb',
     (gltf)=>{
       loadDiv.remove();
       const model=gltf.scene;
-      // Auto-fit
       const box=new THREE.Box3().setFromObject(model);
       const size=new THREE.Vector3(); box.getSize(size);
-      model.scale.setScalar(4.8/Math.max(size.x,size.y,size.z)); // proper size like reference
-      // Auto-centre
+      model.scale.setScalar(4.8/Math.max(size.x,size.y,size.z));
       const box2=new THREE.Box3().setFromObject(model);
       const center=new THREE.Vector3(); box2.getCenter(center);
       model.position.sub(center);
-      // Spray iridescent material on every mesh
       model.traverse(child=>{
         if(child.isMesh){
           child.material=makeMat();
@@ -378,10 +413,10 @@ function buildRoseScene(){
       rg.add(model);
     },
     (xhr)=>{ if(xhr.total>0) loadDiv.textContent=`Loading ${Math.round(xhr.loaded/xhr.total*100)}% 🌹`; },
-    (err)=>{ loadDiv.textContent='无法加载 rose.glb 😢'; console.error('GLTFLoader: rose.glb failed',err); }
+    (err)=>{ loadDiv.textContent='无法加载 rose.glb 😢'; console.error('GLTFLoader error',err); }
   );
 
-  // Render + rotate loop
+  /* Render loop */
   let rf=0;
   (function loop(){
     requestAnimationFrame(loop); rf++;
@@ -390,16 +425,14 @@ function buildRoseScene(){
     rg.scale.setScalar(1+0.010*Math.sin(rf*0.022));
     rFloaters.forEach(f=>{
       f.obj.position.y=f.baseY+Math.sin(t*f.fs*60+f.fo)*f.fa;
-      f.obj.rotation.x+=f.rs.x;f.obj.rotation.y+=f.rs.y;f.obj.rotation.z+=f.rs.z;
+      f.obj.rotation.x+=f.rs.x; f.obj.rotation.y+=f.rs.y; f.obj.rotation.z+=f.rs.z;
     });
     lA.position.set(Math.cos(t*0.65)*4,3,Math.sin(t*0.65)*4);
     lB.position.set(Math.cos(t*0.45+2.1)*4,-1,Math.sin(t*0.45+2.1)*4);
     lC.position.set(Math.cos(t*0.30+4.2)*3,4,Math.sin(t*0.30+4.2)*3);
-    allMats.forEach(m=>{if(m.userData&&m.userData.sh)m.userData.sh.uniforms.uT.value=t});
     rr.render(rs,rc);
   })();
 }
-
 /* Password Gate */
 (function(){
   const gate=document.getElementById('gate');
