@@ -241,9 +241,9 @@ function openEnvelope(){
        const bgmA=document.getElementById('bgm-a');
        const bgmB=document.getElementById('bgm-b');
        // Fade out A, fade in B
-       gsap.to(bgmA,{volume:0,duration:1.2,onComplete:()=>bgmA.pause()});
+       gsap.to(bgmA,{volume:0,duration:2.5,onComplete:()=>bgmA.pause()});
        bgmB.volume=0; bgmB.play().catch(()=>{});
-       gsap.to(bgmB,{volume:0.35,duration:1.2});
+       gsap.to(bgmB,{volume:0.35,duration:2.5});
      },1.7);
 }
 
