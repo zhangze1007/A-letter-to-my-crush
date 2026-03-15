@@ -6,45 +6,82 @@
 <title>For You · Only You</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet"/>
 <style>
-/* 核心样式：确保长文本阅读体验 */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
 body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 130% 110% at 50% 0%,#fff0f5 0%,#fde8f0 22%,#faf0f8 52%,#f5f0ff 78%,#f0f5ff 100%)}
-#three-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#three-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;background:transparent}
+
+/* Gate */
+#gate{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse 130% 110% at 50% 0%,#fff0f5 0%,#fde8f0 22%,#faf0f8 52%,#f5f0ff 78%,#f0f5ff 100%);padding:2rem;text-align:center;transition:opacity .8s}
+.gate-petal{font-size:2.2rem;margin-bottom:1.5rem;animation:petalspin 6s linear infinite}
+@keyframes petalspin{to{transform:rotate(360deg)}}
+.gate-question{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.1rem,3vw,1.5rem);color:#9a6080;line-height:1.8;max-width:480px;margin-bottom:.6rem}
+.gate-hint{font-family:'Noto Serif SC',serif;font-size:.78rem;color:#c9a0b8;letter-spacing:.1em;margin-bottom:2rem}
+.gate-input{width:min(340px,85vw);padding:.85rem 1.4rem;border:1.5px solid rgba(210,170,190,.5);border-radius:3px;background:rgba(255,255,255,.7);font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:#7a4060;text-align:center;outline:none;transition:border-color .3s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.gate-input:focus{border-color:rgba(192,86,122,.5)}
+.gate-input::placeholder{color:#d4b0c4;font-style:italic}
+.gate-btn{display:block;margin:1.2rem auto 0;padding:.7rem 2.8rem;background:rgba(240,200,220,.25);border:1px solid rgba(210,170,190,.5);border-radius:3px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:.82rem;letter-spacing:.3em;text-transform:uppercase;color:#a07090;transition:all .3s;min-height:48px;touch-action:manipulation;-webkit-tap-highlight-color:rgba(192,86,122,.2)}
+.gate-btn:hover,.gate-btn:active{background:rgba(240,200,220,.5);color:#7a4060}
+.gate-error{margin-top:1rem;font-style:italic;font-size:.88rem;color:#c05878;opacity:0;transition:opacity .4s;height:1.2em}
+.gate-error.show{opacity:1}
+
+/* Phase 1 */
 #phase1{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
 .p1-eyebrow{font-size:.72rem;letter-spacing:.45em;text-transform:uppercase;color:#c9a0b8;opacity:0;transform:translateY(10px);margin-bottom:1.2rem}
 .p1-title{font-size:clamp(3rem,9vw,6.5rem);font-weight:300;font-style:italic;line-height:1.05;text-align:center;color:#9a6080;text-shadow:0 2px 40px rgba(200,140,180,.35);opacity:0;transform:translateY(20px)}
+.p1-title em{color:#c07090;font-style:normal}
 .p1-sub{font-family:'Noto Serif SC',serif;font-size:clamp(.85rem,1.8vw,1.05rem);font-weight:300;letter-spacing:.2em;color:#b898aa;margin-top:1.4rem;opacity:0;transform:translateY(10px)}
 .p1-divider{width:1px;height:0;margin:2rem auto 0;background:linear-gradient(to bottom,transparent,#c9a0b8,transparent)}
-#click-prompt{position:fixed;bottom:11vh;left:50%;transform:translateX(-50%);z-index:25;cursor:pointer;pointer-events:none;font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:#c9a0b8;opacity:0;animation:breathe 2.2s ease-in-out infinite}
+
+/* Click prompt */
+#click-prompt{position:fixed;bottom:11vh;left:50%;transform:translateX(-50%);z-index:25;cursor:pointer;pointer-events:none;font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:#c9a0b8;opacity:0;animation:breathe 2.2s ease-in-out infinite;touch-action:manipulation;-webkit-tap-highlight-color:rgba(192,86,122,.2);min-height:44px;display:flex;align-items:center}
 @keyframes breathe{0%,100%{opacity:.4}50%{opacity:.9}}
+
+/* Letter */
 #letter-overlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;padding:2rem;background:rgba(255,240,248,0)}
 #letter-overlay.active{pointer-events:auto}
-.letter-scroll{width:min(660px,92vw);max-height:82vh;overflow-y:auto;background:linear-gradient(165deg,#fffcfe 0%,#fef5f8 50%,#fdf0f5 100%);border:1px solid rgba(210,170,190,.35);padding:clamp(2rem,5vw,3.8rem) clamp(2rem,6vw,4.5rem);position:relative;transform:translateY(50px) scale(.94);box-shadow:0 40px 100px rgba(180,100,140,.12),0 0 0 1px rgba(220,180,200,.2)}
-.letter-body{font-family:'Noto Serif SC',serif;font-size:.93rem;line-height:2.25;color:#5a3050;text-align:justify}
-.letter-body p{margin-bottom:1.5rem;text-indent:2em}
+.letter-scroll{width:min(660px,92vw);max-height:82vh;overflow-y:auto;background:linear-gradient(165deg,#fffcfe 0%,#fef5f8 50%,#fdf0f5 100%);border:1px solid rgba(210,170,190,.35);padding:clamp(2rem,5vw,3.8rem) clamp(2rem,6vw,4.5rem);position:relative;transform:translateY(50px) scale(.94);box-shadow:0 40px 100px rgba(180,100,140,.12),0 0 0 1px rgba(220,180,200,.2),inset 0 1px 0 rgba(255,255,255,.8);scrollbar-width:thin;scrollbar-color:rgba(200,150,180,.3) transparent}
+.letter-scroll::-webkit-scrollbar{width:3px}.letter-scroll::-webkit-scrollbar-thumb{background:rgba(200,150,180,.3);border-radius:2px}
+.letter-scroll::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#e0a8c0,transparent)}
+.letter-scroll::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent,transparent 27px,rgba(180,140,160,.06) 28px)}
+.letter-header{text-align:center;margin-bottom:2rem}
+.letter-header-title{font-size:.72rem;letter-spacing:.35em;text-transform:uppercase;color:#c09ab0;opacity:.85;margin-bottom:.7rem}
+.letter-seal{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#f0c0d0,#d08090);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto .9rem;box-shadow:0 4px 18px rgba(200,100,130,.35)}
+.letter-date{font-style:italic;font-size:.76rem;letter-spacing:.2em;color:#c09ab0;opacity:.75}
+.letter-greeting{font-style:italic;font-size:1.22rem;color:#7a4060;margin-bottom:1.5rem}
+.letter-body{font-family:'Noto Serif SC',serif;font-size:.93rem;line-height:2.25;color:#5a3050}
+.letter-body p{margin-bottom:1.2rem;text-indent:2em}
+.letter-footer-quote{margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(200,160,180,.22);text-align:center;font-style:italic;font-size:.92rem;color:#a07090;letter-spacing:.08em}
+.letter-footer-quote em{color:#c05878}
+.letter-signoff{text-align:right;margin-top:2rem;font-style:italic;font-size:1rem;color:#7a4060}
+.letter-signoff span{display:block;font-size:1.3rem;color:#c05878;margin-top:.3rem}
+.letter-close-btn{display:block;margin:2rem auto 0;background:rgba(240,200,220,.2);border:1px solid rgba(210,170,190,.4);color:#a07090;padding:1rem 3rem;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:.88rem;letter-spacing:.3em;text-transform:uppercase;transition:all .3s;border-radius:2px;-webkit-tap-highlight-color:rgba(192,86,122,.2);touch-action:manipulation;user-select:none;min-width:200px;min-height:48px}
+.letter-close-btn:hover,.letter-close-btn:active{background:rgba(240,200,220,.5);color:#8a5070}
+
+/* Rose */
 #rose-section{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0}
-#rose-three-wrap{width:min(450px,90vw);height:min(550px,90vw)}
-.rose-poem{margin-top:1.5rem;text-align:center;font-style:italic;color:#a07890;font-size:1rem;line-height:1.8}
-#gate{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff0f5;padding:2rem;text-align:center;}
-.gate-input{width:min(340px,85vw);padding:.85rem;border:1.5px solid #d2aab6;border-radius:3px;text-align:center;outline:none;}
-.gate-btn{margin-top:1.2rem;padding:.7rem 2.8rem;background:rgba(240,200,220,.25);border:1px solid #d2aab6;cursor:pointer;color:#a07090;}
-.gate-error{margin-top:1rem;color:#c05878;font-size:.85rem;opacity:0;transition:opacity .4s}
-.gate-error.show{opacity:1}
+#rose-three-wrap{width:min(420px,90vw);height:min(560px,90vw)}
+#rose-three-wrap canvas{width:100%!important;height:100%!important}
+.rose-poem{margin-top:2.2rem;text-align:center;font-style:italic;font-size:clamp(.9rem,2vw,1.08rem);line-height:2.5;color:#a07890;letter-spacing:.06em;max-width:440px}
+.rose-poem em{color:#c05878;font-style:normal}
 </style>
 </head>
 <body>
 
+<!-- Gate -->
 <div id="gate">
-  <div style="font-size:2rem;margin-bottom:1rem;">🌸</div>
-  <p style="font-style:italic;color:#9a6080;margin-bottom:1.5rem;">你还记得我第一次约你出来<br/>一起看的电影叫什么名字吗？</p>
-  <input class="gate-input" id="gate-input" type="text" placeholder="输入电影名..."/>
+  <div class="gate-petal">🌸</div>
+  <p class="gate-question">你还记得我第一次约你出来<br/>一起看的电影叫什么名字吗？</p>
+  <p class="gate-hint">只有你知道答案 · Only you would know</p>
+  <input class="gate-input" id="gate-input" type="text" placeholder="在这里输入…" autocomplete="off" autocorrect="off" spellcheck="false"/>
   <button class="gate-btn" id="gate-btn">进入 · Enter</button>
   <p class="gate-error" id="gate-error">答案不对哦，再想想 🌸</p>
 </div>
 
+<!-- Main Three.js canvas (floaters + envelope) -->
 <canvas id="three-canvas"></canvas>
 
+<!-- Phase 1 -->
 <div id="phase1">
   <p class="p1-eyebrow" id="p1-ey">一封写给你的信 · A letter for you</p>
   <h1 class="p1-title" id="p1-t">For <em>You,</em><br/>Only You.</h1>
@@ -54,139 +91,373 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
 
 <div id="click-prompt">✦ 点击开启 ✦</div>
 
+<!-- Letter -->
 <div id="letter-overlay">
   <div class="letter-scroll" id="letter-scroll">
-    <p style="font-style:italic;font-size:1.3rem;color:#7a4060;margin-bottom:2rem;">抒均，</p>
+    <div class="letter-header">
+      <p class="letter-header-title">一封写给你的信 · A Letter For You</p>
+      <div class="letter-seal">💌</div>
+      <p class="letter-date">一个普通却又不普通的日子</p>
+    </div>
+    <p class="letter-greeting">抒均，</p>
     <div class="letter-body">
-      <p>有些感情，不是不想说，而是说出口的那一刻，它就会变轻。所以我选择把它写进代码——藏在这些只有你看得见的地方，让它以它本来的重量，完整地落在你面前。</p> 
-
-      <p>我记得我第一次清晰的看见你，是你戴着黑色口罩、扎着马尾站在我前面的一个早晨。当时的我站在前面 Public Speaking，字句都还算镇定，但眼神却一次次被你牵走。那时我还不明白那是什么，只是隐约觉得，台下有一个人，让我想把每一句话说得更好一点。</p>
-
-      <p>后来我唱了一首《喜欢你》。我没有告诉任何人那首歌是为谁唱的，甚至没有承认它是为谁唱的。但当我看见你是第一个点赞的人，那个瞬间——我不知道该用什么词来形容——就是那种心突然被什么轻轻击中的感觉，像一块石头落进很深的水里，涟漪散开，很久很久才平静。</p>
-
+      <p>有些感情，不是不想说，而是说出口的那一刻，它就会变轻。所以我选择把它写进代码——藏在这些只有你看得见的地方，让它以它本来的重量，完整地落在你面前。</p>
+      <p>我记得第一次看见你，是你戴着黑色口罩、扎着马尾坐在台下的那个下午。我站在前面做 Public Speaking，字句都还算镇定，但眼神却一次次被你牵走。那时我还不明白那是什么，只是隐约觉得，台下有一个人，让我想把每一句话说得更好一点。</p>
+      <p>后来我唱了一首《喜欢你》。我没有告诉任何人那首歌是为谁唱的，甚至没有承认它是为谁唱的。但当我看见你是第一个点赞的人，那个瞬间——就是那种心突然被什么轻轻击中的感觉，像一块石头落进很深的水里，涟漪散开，很久很久才平静。</p>
       <p>那段时间，我开始留意你出现与不出现的每一天。有几天你连续缺席，我在 Noted 上看见你发了一个难过的表情。我犹豫了很久，最终还是鼓起勇气发了一条消息问你还好吗。后来我才隐约拼凑出，那段日子你正独自扛着关于母亲的消息——那种沉甸甸的、一个人搬不动的重量。我没有办法替你分担任何东西，这件事让我第一次深刻地感受到无能为力是什么滋味。但也是那个时候，我看见了你真正的样子：你不是不脆弱，只是你选择把脆弱收好，把坚强留给需要你的人。</p>
-
       <p>我曾经在某些决定上让你失望，说了一些不该说的话，在你面前留下过裂痕。我以为那道裂痕会把我们之间仅剩的距离也一并带走。但你还是在我生日那天，主动发来了祝福。我回了"谢谢你，抒均"——加了你的名字，是因为我想让你知道，这句谢谢，不是随口说的。</p>
-
       <p>Hari Koku 那天，我借口说没事做，跑去帮你们档口卖咖啡。MUET Speaking 练习，我想方设法安排去你的班。我不是真的需要咖啡，也不是真的只为了练习口语——我只是想用那些借口，换几分钟能光明正大地站在你旁边的时间。暗恋的人大概都懂这种笨方法。你把所有理由都编得像是顺路，但其实每一步都是特意为之。</p>
-
       <p>你在 Noted 上的样子，和你在现实里的样子，是截然不同的两个人。线上的你生动、跳脱、带着一种毫不掩饰的可爱；线下的你安静、克制、像一首不肯轻易让人读懂的诗。我喜欢那种反差——不是因为哪一面更好，而是因为我见过两面的人，少之又少。</p>
-
-      <p>彩排那天，我们第一组在礼堂对稿，你坐在椅子上，安静地看着我在白板上写故事结构。你没有说什么，只是看着。我不知道你在想什么，但我知道我写每一个字的时候，都比平时更用力了一点。表演那天，上台前我站在侧边一直往台下望，一排一排地找，没有找到你。我以为你回家了。后来表演结束很久，你才回到现场。表演结束时大家都夸赞我们的表演十分精彩,但只有我知道,在这时刻我内心有种说不清的感受——不是责怪只是小小的遗憾,你没有看见我在台上表演的样子。再后来,我看见你 stories 发了一张女厕的画面——原来你一直在里面，只是好像被什么事情困住了，出来的时候我们已经谢幕了。</p>
-
-      <p>Camp 里的猜谜游戏，我向着你的方向单膝跪下做出求婚动作，是游戏，也不完全是游戏。那一刻我只记得你笑了。你的笑是那种会让周围空气都松动一点的笑——我那天很庆幸自己跪的方向是你。</p>
-
+      <p>彩排那天，我们第一组在礼堂对稿，你坐在椅子上，安静地看着我在白板上写故事结构。你没有说什么，只是看着。我不知道你在想什么，但我知道我写每一个字的时候，都比平时更用力了一点。表演那天，上台前我站在侧边一直往台下望，一排一排地找，没有找到你。我以为你没来。后来表演结束很久，你才回到现场。再后来我看见你 stories 发了一张女厕的画面——原来你一直在里面，只是被什么事情困住了，出来的时候，我们已经谢幕了。那种感觉说不清楚——不是责怪，只是有一点点遗憾，你没有看见我站在台上的样子。</p>
+      <p>Camp 里的猜谜游戏，我向着你的方向单膝跪下，是游戏，也不完全是游戏。那一刻我只记得你笑了。你的笑是那种会让周围空气都松动一点的笑——我那天很庆幸自己跪的方向是你。</p>
       <p>我知道，这段感情，始终只是我一个人的事。你不一定知道，就算知道，也未必有同样的感受。暗恋本来就是这样的东西——它不需要对方的回应才能成立，但它也因为没有回应，而只能在心里安静地自生自灭。如果我不主动找话题，我们大概真的会变成陌生人。这件事我想得很清楚，接受得也比我以为的坦然。</p>
-
       <p>我想对你说谢谢。谢谢你在我笨拙、冒失、有时候说错话的时候，还是以一种不留痕迹的方式，包容了我。我不再执着于非要和你在一起这件事，但我心里对你的那份喜欢，它自己有它的形状，不会因为我不执着而消失，只是会放在一个安静的地方，不打扰你，也不打扰我。</p>
-
       <p>如果可以，我希望时间能停在那个猜谜游戏的瞬间，停在你笑着看我的那一秒。</p>
       <p>如果可以，我希望毕业典礼那天，那张匿名写着"我喜欢你"的纸条，是你写给我的。</p>
       <p>如果可以，我希望我们能走进同一所大学，在某个转角，以某种方式，继续出现在彼此的故事里。</p>
-
       <p>这个网站，是我能想到的最笨、也最诚实的方式。我不知道你看完会有什么感受，但我知道，如果我不说，这些话会跟着青春一起，悄悄地消失。</p>
-
       <p>所以在消失之前——<em style="color:#c05878;font-style:italic">抒均，我喜欢你。</em></p>
     </div>
-    <div style="text-align:right;margin-top:2rem;font-style:italic;color:#7a4060;">带着一点紧张，很多真心<br/><span style="color:#c05878;font-size:1.2rem;">— 喜欢 Sj 的男孩纸 🌸</span></div>
-    <button id="letter-close" style="display:block;margin:2rem auto 0;padding:.8rem 2.5rem;border:1px solid #d2aab6;background:none;color:#a07090;cursor:pointer;">继续 · Continue</button>
+    <div class="letter-footer-quote">
+      粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>
+      它不问结局，只是静静地，把这份心意<em>如实地交给你</em>。
+    </div>
+    <div class="letter-signoff">带着一点紧张，很多真心<br/><span>— 喜欢 Sj 的男孩纸 🌸</span></div>
+    <button class="letter-close-btn" id="letter-close">继续 · Continue</button>
   </div>
 </div>
 
+<!-- Rose -->
 <div id="rose-section">
   <div id="rose-three-wrap"></div>
-  <p class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></p>
+  <div class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></div>
 </div>
 
 <audio id="bgm" loop><source src="5_6172476352109747894.mp3" type="audio/mpeg"/></audio>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<!-- Use r128 — same version Gemini used, confirmed working for GLB -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
-// 1. 动态加载 GLTFLoader
-const script = document.createElement('script');
-script.src = 'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-document.head.appendChild(script);
+/* ══════════════════════════════════════
+   MAIN SCENE — floaters + envelope
+══════════════════════════════════════ */
+const mainCanvas=document.getElementById('three-canvas');
+const mainRenderer=new THREE.WebGLRenderer({canvas:mainCanvas,antialias:true,alpha:true});
+mainRenderer.setPixelRatio(Math.min(devicePixelRatio,2));
+mainRenderer.setClearColor(0x000000,0);
+mainRenderer.domElement.style.background='transparent';
+mainRenderer.toneMapping=THREE.ACESFilmicToneMapping;
+mainRenderer.toneMappingExposure=1.1;
+mainRenderer.setSize(innerWidth,innerHeight);
+const mainScene=new THREE.Scene();
+const mainCamera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,200);
+mainCamera.position.set(0,0,12);
+addEventListener('resize',()=>{mainRenderer.setSize(innerWidth,innerHeight);mainCamera.aspect=innerWidth/innerHeight;mainCamera.updateProjectionMatrix()});
+mainScene.add(new THREE.AmbientLight(0xfff0f8,1.0));
+const sunL=new THREE.DirectionalLight(0xffffff,1.8);sunL.position.set(6,10,8);mainScene.add(sunL);
+const pinkL=new THREE.PointLight(0xffb0d0,2.5,22);pinkL.position.set(-4,3,3);mainScene.add(pinkL);
+const blueL=new THREE.PointLight(0xb0d8ff,1.8,18);blueL.position.set(4,-1,-2);mainScene.add(blueL);
 
-let roseModel;
-function buildRoseScene() {
-    const wrap = document.getElementById('rose-three-wrap');
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth/wrap.clientHeight, 0.1, 1000);
-    camera.position.set(0, 1.2, 7);
+/* 3D Floaters — hearts, stars, clouds, cupid arrows */
+const floatGroup=new THREE.Group();mainScene.add(floatGroup);
+const candyCols=[0xffb5c8,0xffd6e0,0xb5d8ff,0xd4f0c8,0xffe0b5,0xe8b5ff,0xffefb5];
 
-    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    wrap.appendChild(renderer.domElement);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(5, 10, 5);
-    scene.add(sun);
-
-    const loader = new THREE.GLTFLoader();
-    // 强制加载外部模型，无保底代码
-    loader.load('./rose.glb', (gltf) => {
-        roseModel = gltf.scene;
-        roseModel.traverse(child => {
-            if(child.isMesh) {
-                child.material = new THREE.MeshPhysicalMaterial({
-                    color: 0xf0d0dc, metalness: 0.9, roughness: 0.15, iridescence: 1.0, side: THREE.DoubleSide
-                });
-            }
-        });
-        const box = new THREE.Box3().setFromObject(roseModel);
-        const center = box.getCenter(new THREE.Vector3());
-        roseModel.position.sub(center);
-        scene.add(roseModel);
-    }, (xhr) => {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-    }, (err) => {
-        alert("模型加载失败：请检查 rose.glb 是否与 index.html 在同一文件夹下。");
-    });
-
-    function animate() {
-        requestAnimationFrame(animate);
-        if(roseModel) roseModel.rotation.y += 0.01;
-        renderer.render(scene, camera);
-    }
-    animate();
+// Jelly candy material — works with r128 (no transmission, use opacity+shininess)
+function jellyMat(col){
+  return new THREE.MeshPhongMaterial({
+    color:col, transparent:true, opacity:0.70,
+    shininess:160, specular:new THREE.Color(0xffffff),
+    side:THREE.DoubleSide, depthWrite:false,
+  });
 }
 
-/* 交互逻辑 */
-const tl = gsap.timeline({paused:true});
-tl.to('#p1-ey',{opacity:1, y:0, duration:1}).to('#p1-t',{opacity:1, y:0},"-=0.5").to('#p1-s',{opacity:1, y:0},"-=0.5").to('#p1-d',{height:60});
+function makeHeart(s,col){
+  const sh=new THREE.Shape();
+  sh.moveTo(0,s*.5);sh.bezierCurveTo(s*.5,s,s,s*.8,s,s*.4);
+  sh.bezierCurveTo(s,0,s*.5,-s*.2,0,-s*.5);
+  sh.bezierCurveTo(-s*.5,-s*.2,-s,0,-s,s*.4);
+  sh.bezierCurveTo(-s,s*.8,-s*.5,s,0,s*.5);
+  const g=new THREE.ExtrudeGeometry(sh,{depth:s*.25,bevelEnabled:true,bevelSize:.04*s,bevelSegments:4});
+  g.center();return new THREE.Mesh(g,jellyMat(col));
+}
+function makeStar(s,col){
+  const sh=new THREE.Shape();
+  for(let i=0;i<10;i++){const a=(i*Math.PI/5)-Math.PI/2,r=i%2===0?s:s*.42;i===0?sh.moveTo(Math.cos(a)*r,Math.sin(a)*r):sh.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
+  sh.closePath();
+  const g=new THREE.ExtrudeGeometry(sh,{depth:s*.2,bevelEnabled:true,bevelSize:.03*s,bevelSegments:3});
+  g.center();return new THREE.Mesh(g,jellyMat(col));
+}
+function makeCloud(s,col){
+  const g=new THREE.Group();
+  [[0,0,s*.7],[s*.55,s*.2,s*.55],[-.5*s,s*.18,s*.52],[s*.28,s*.38,s*.45],[-.25*s,s*.35,s*.42]]
+    .forEach(([x,y,r])=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),jellyMat(col));m.position.set(x,y,0);g.add(m)});
+  return g;
+}
+function makeArrow(s,col){
+  const g=new THREE.Group();
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(s*.04,s*.04,s*1.5,8),jellyMat(col));
+  shaft.rotation.z=Math.PI/2;g.add(shaft);
+  const tip=new THREE.Mesh(new THREE.ConeGeometry(s*.12,s*.3,8),jellyMat(col));
+  tip.rotation.z=-Math.PI/2;tip.position.x=s*.9;g.add(tip);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(s*.1,s*.22,4),jellyMat(col));
+  tail.rotation.z=Math.PI/2;tail.position.x=-s*.88;g.add(tail);
+  return g;
+}
 
-document.getElementById('gate-btn').onclick = () => {
-    const val = document.getElementById('gate-input').value.trim().toLowerCase();
-    if(['zootopia 2','zootopia2','疯狂动物城2'].includes(val)) {
-        gsap.to('#gate', {opacity:0, onComplete:()=> {
-            document.getElementById('gate').style.display='none';
-            tl.play();
-            setTimeout(()=> gsap.to('#click-prompt',{opacity:1, pointerEvents:'auto'}), 4000);
-        }});
+const floaters=[];
+const makers=[(c)=>makeHeart(.28,c),(c)=>makeHeart(.18,c),(c)=>makeStar(.22,c),(c)=>makeStar(.15,c),(c)=>makeCloud(.18,c),(c)=>makeArrow(.32,c)];
+for(let i=0;i<32;i++){
+  const col=candyCols[i%candyCols.length];
+  const obj=makers[i%makers.length](col);
+  const sp=9;
+  obj.position.set((Math.random()-.5)*sp*2,(Math.random()-.5)*sp*1.4,(Math.random()-.5)*4-2);
+  obj.rotation.set(Math.random()*Math.PI*2,Math.random()*Math.PI*2,Math.random()*Math.PI*2);
+  floaters.push({obj,fs:.0004+Math.random()*.0006,fa:.25+Math.random()*.4,fo:Math.random()*Math.PI*2,
+    rs:new THREE.Vector3((Math.random()-.5)*.008,(Math.random()-.5)*.010,(Math.random()-.5)*.006),baseY:obj.position.y});
+  floatGroup.add(obj);
+}
+
+/* Envelope */
+const envGroup=new THREE.Group();mainScene.add(envGroup);
+let envState='idle';
+const paperMat=new THREE.MeshPhysicalMaterial({color:0xfff5f0,metalness:0,roughness:.45,clearcoat:.6,side:THREE.DoubleSide});
+const flapMat=new THREE.MeshPhysicalMaterial({color:0xfde8f0,metalness:0,roughness:.4,clearcoat:.7,side:THREE.DoubleSide});
+const bodyGeo=new THREE.BoxGeometry(3.8,2.5,.09);
+envGroup.add(new THREE.Mesh(bodyGeo,paperMat));
+envGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(bodyGeo),new THREE.LineBasicMaterial({color:0xf0b0c8,transparent:true,opacity:.5})));
+[[0,0,.047,1.9,-1.25,.047],[0,0,.047,-1.9,-1.25,.047],[0,0,.047,1.9,1.25,.047],[0,0,.047,-1.9,1.25,.047]].forEach(([x1,y1,z1,x2,y2,z2])=>{const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x1,y1,z1),new THREE.Vector3(x2,y2,z2)]);envGroup.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xf0b0c8,transparent:true,opacity:.3})))});
+const flapGroup=new THREE.Group();flapGroup.position.set(0,1.25,.042);envGroup.add(flapGroup);
+const flapSh=new THREE.Shape();flapSh.moveTo(-1.9,0);flapSh.lineTo(1.9,0);flapSh.lineTo(0,-1.24);flapSh.closePath();
+const flapMesh=new THREE.Mesh(new THREE.ShapeGeometry(flapSh,10),flapMat);flapMesh.position.set(0,0,.002);flapGroup.add(flapMesh);
+const sealMat=new THREE.MeshPhysicalMaterial({color:0xf0b0c8,metalness:.2,roughness:.25,clearcoat:.9});
+const sealMesh=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.045,32),sealMat);sealMesh.rotation.x=Math.PI/2;sealMesh.position.set(0,-.55,.08);flapGroup.add(sealMesh);
+envGroup.position.set(0,14,0);envGroup.visible=false;
+
+/* Main loop */
+let mFrame=0;
+(function mainLoop(){requestAnimationFrame(mainLoop);mFrame++;const t=mFrame*.016;
+floaters.forEach(f=>{f.obj.position.y=f.baseY+Math.sin(t*f.fs*60+f.fo)*f.fa;f.obj.rotation.x+=f.rs.x;f.obj.rotation.y+=f.rs.y;f.obj.rotation.z+=f.rs.z});
+if(envState==='waiting'&&envGroup.visible)envGroup.position.y=.15*Math.sin(mFrame*.022);
+pinkL.position.x=Math.cos(t*.55)*5;pinkL.position.z=Math.sin(t*.55)*5;
+blueL.position.x=Math.cos(t*.40+2.1)*5;blueL.position.z=Math.sin(t*.40+2.1)*5;
+mainRenderer.render(mainScene,mainCamera)})();
+
+/* ══════════════════════════════════════
+   GSAP TIMELINE
+══════════════════════════════════════ */
+const tl=gsap.timeline({paused:true});
+tl.to('#p1-ey',{opacity:1,y:0,duration:1.0,ease:'power3.out'},0.3)
+  .to('#p1-t', {opacity:1,y:0,duration:1.4,ease:'power3.out'},0.8)
+  .to('#p1-s', {opacity:1,y:0,duration:.9, ease:'power2.out'},1.6)
+  .to('#p1-d', {height:68,duration:.8,ease:'power2.inOut'},2.2)
+  .to(['#p1-ey','#p1-t','#p1-s','#p1-d'],{y:-80,opacity:0,duration:.9,ease:'power2.in',stagger:.04},3.8)
+  .add(()=>{envGroup.visible=true;gsap.fromTo(envGroup.position,{y:14},{y:0,duration:1.4,ease:'back.out(1.15)'})},4.0)
+  .add(()=>{gsap.to(envGroup.rotation,{y:Math.PI*2,duration:3.2,ease:'power1.inOut',onComplete:()=>{
+    envGroup.rotation.y=0;envState='waiting';
+    const cp=document.getElementById('click-prompt');
+    cp.style.pointerEvents='auto';
+    gsap.to(cp,{opacity:1,duration:.8});
+  }})},5.0);
+
+/* Open envelope */
+function openEnvelope(){
+  if(envState!=='waiting')return;envState='opening';
+  const cp=document.getElementById('click-prompt');
+  gsap.to(cp,{opacity:0,duration:.4,onComplete:()=>cp.style.pointerEvents='none'});
+  const etl=gsap.timeline();
+  etl.to(envGroup.position,{y:.4,duration:.5,ease:'power2.out'})
+     .to(envGroup.rotation,{x:-.18,duration:.5,ease:'power2.out'},0)
+     .to(flapGroup.rotation,{x:-Math.PI*1.05,duration:1.5,ease:'power2.inOut'},.25)
+     .to(envGroup.position,{y:.05,duration:.7,ease:'power2.inOut'},1.1)
+     .to(envGroup.rotation,{x:0,duration:.7,ease:'power2.inOut'},1.1)
+     .add(()=>{
+       const lo=document.getElementById('letter-overlay');lo.classList.add('active');
+       gsap.to(lo,{opacity:1,background:'rgba(255,240,248,0.65)',duration:.9,ease:'power2.out'});
+       gsap.to('#letter-scroll',{y:0,scale:1,duration:1.1,ease:'back.out(1.3)',delay:.1});
+       gsap.to(envGroup.position,{z:-5,duration:1.2,ease:'power2.in',delay:.2});
+       gsap.to(floatGroup,{opacity:.25,duration:1,delay:.3});
+       const bgm=document.getElementById('bgm');bgm.volume=.35;bgm.play().catch(()=>{});
+     },1.7);
+}
+
+/* Click prompt — touch + click */
+let promptFired=false;
+const cpEl=document.getElementById('click-prompt');
+cpEl.addEventListener('touchstart',(e)=>{e.preventDefault();if(promptFired)return;promptFired=true;openEnvelope()},{passive:false});
+cpEl.addEventListener('click',()=>{if(promptFired)return;promptFired=true;openEnvelope()});
+
+/* Letter close — touch + click */
+function handleLetterClose(){
+  const cp=document.getElementById('click-prompt');cp.style.cssText='display:none!important';
+  const lo=document.getElementById('letter-overlay');
+  gsap.to(lo,{opacity:0,duration:.9,ease:'power2.in',onComplete:()=>{lo.classList.remove('active');lo.style.display='none';envGroup.visible=false}});
+  gsap.to(floatGroup,{opacity:0,duration:.8});
+  const rSec=document.getElementById('rose-section');
+  rSec.style.opacity='0';rSec.style.pointerEvents='auto';rSec.style.display='flex';
+  setTimeout(()=>{buildRoseScene();gsap.to('#rose-section',{opacity:1,duration:1.4,ease:'power2.out'})},700);
+}
+let closeFired=false;
+const closeBtn=document.getElementById('letter-close');
+closeBtn.addEventListener('touchstart',(e)=>{e.preventDefault();if(closeFired)return;closeFired=true;handleLetterClose()},{passive:false});
+closeBtn.addEventListener('click',()=>{if(closeFired)return;closeFired=true;handleLetterClose()});
+
+document.addEventListener('click',()=>{const b=document.getElementById('bgm');if(b&&b.paused){b.volume=.35;b.play().catch(()=>{})}},{once:true});
+
+/* ══════════════════════════════════════
+   ROSE SCENE — GLTFLoader r128 (Gemini method)
+   + iridescent crystal material overlay
+══════════════════════════════════════ */
+function buildRoseScene(){
+  const wrap=document.getElementById('rose-three-wrap');
+  if(wrap.querySelector('canvas'))return;
+
+  const W=wrap.clientWidth||Math.min(420,window.innerWidth-40);
+  const H=wrap.clientHeight||Math.min(560,window.innerHeight*.75);
+
+  const rr=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  rr.setSize(W,H);rr.setPixelRatio(Math.min(devicePixelRatio,2));
+  rr.setClearColor(0,0);
+  rr.shadowMap.enabled=true;
+  rr.toneMapping=THREE.ACESFilmicToneMapping;
+  rr.toneMappingExposure=1.8;
+  rr.domElement.style.width='100%';rr.domElement.style.height='100%';
+  wrap.appendChild(rr.domElement);
+
+  window.addEventListener('resize',()=>{
+    const nW=wrap.clientWidth||W,nH=wrap.clientHeight||H;
+    rr.setSize(nW,nH);rc.aspect=nW/nH;rc.updateProjectionMatrix();
+  });
+
+  const rs=new THREE.Scene();
+  const rc=new THREE.PerspectiveCamera(36,W/H,0.1,100);
+  rc.position.set(0,1.2,7);rc.lookAt(0,0,0);
+
+  /* Lights for iridescence */
+  rs.add(new THREE.AmbientLight(0xffffff,0.8));
+  const kl=new THREE.DirectionalLight(0xffffff,4.5);kl.position.set(5,10,5);kl.castShadow=true;rs.add(kl);
+  const fl=new THREE.DirectionalLight(0xfff0f8,2.0);fl.position.set(-4,3,5);rs.add(fl);
+  const bl=new THREE.DirectionalLight(0xffffff,3.0);bl.position.set(0,5,-8);rs.add(bl);
+  const lA=new THREE.PointLight(0xff88bb,5.5,20);rs.add(lA);
+  const lB=new THREE.PointLight(0x88bbff,4.5,18);rs.add(lB);
+  const lC=new THREE.PointLight(0xffdd88,3.0,14);rs.add(lC);
+
+  /* Crystal iridescent material */
+  const allMats=[];
+  function makeMat(){
+    const m=new THREE.MeshPhysicalMaterial({
+      color:new THREE.Color(0xf0d0dc),
+      metalness:1.0,roughness:0.10,
+      clearcoat:1.0,clearcoatRoughness:0.04,
+      reflectivity:1.0,side:THREE.DoubleSide,
+    });
+    m.onBeforeCompile=shader=>{
+      shader.uniforms.uT={value:0};m.userData.sh=shader;
+      shader.fragmentShader=`uniform float uT;\n`+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`
+        #include <color_fragment>
+        vec3 vN=normalize(vNormal);
+        vec3 vV=normalize(cameraPosition-vViewPosition);
+        float rim=clamp(1.0-abs(dot(vN,vV)),0.0,1.0);
+        float phase=rim*7.5+uT*0.6;
+        vec3 irid=vec3(0.55+0.45*sin(phase),0.50+0.45*sin(phase+2.094),0.60+0.40*sin(phase+4.189));
+        float rimGlow=pow(rim,1.6);
+        diffuseColor.rgb=mix(diffuseColor.rgb,irid,rimGlow*0.75);
+        diffuseColor.rgb+=vec3(rimGlow*0.30);
+      `);
+    };
+    allMats.push(m);return m;
+  }
+
+  /* Loading text */
+  const loadDiv=document.createElement('div');
+  loadDiv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Cormorant Garamond",serif;font-style:italic;color:#c9a0b8;font-size:1rem;letter-spacing:.2em;pointer-events:none';
+  loadDiv.textContent='Loading 🌹';
+  wrap.style.position='relative';wrap.appendChild(loadDiv);
+
+  /* Load GLTFLoader (r128), then rose.glb */
+  const rg=new THREE.Group();rs.add(rg);
+
+  const loaderScript=document.createElement('script');
+  loaderScript.src='https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+  loaderScript.onload=()=>{
+    new THREE.GLTFLoader().load(
+      './rose.glb',
+      (gltf)=>{
+        loadDiv.remove();
+        const model=gltf.scene;
+
+        /* Scale to fill view — larger than before */
+        const box=new THREE.Box3().setFromObject(model);
+        const size=new THREE.Vector3();box.getSize(size);
+        const scale=6.5/Math.max(size.x,size.y,size.z); // bigger: 6.5 instead of 5
+        model.scale.setScalar(scale);
+
+        /* Centre */
+        const center=new THREE.Vector3();box.getCenter(center);
+        model.position.sub(center.multiplyScalar(scale));
+
+        /* Spray iridescent material on every mesh */
+        model.traverse(child=>{
+          if(child.isMesh){
+            child.material=makeMat();
+            child.castShadow=true;child.receiveShadow=true;
+          }
+        });
+        rg.add(model);
+      },
+      (xhr)=>{if(xhr.total>0)loadDiv.textContent=`Loading ${Math.round(xhr.loaded/xhr.total*100)}% 🌹`},
+      (err)=>{loadDiv.textContent='无法加载 rose.glb 😢';console.error('GLTFLoader error',err)}
+    );
+  };
+  document.head.appendChild(loaderScript);
+
+  /* Render loop */
+  let rf=0;
+  (function loop(){
+    requestAnimationFrame(loop);rf++;const t=rf*0.016;
+    rg.rotation.y=rf*0.007;
+    rg.scale.setScalar(1+0.010*Math.sin(rf*0.022));
+    lA.position.set(Math.cos(t*0.65)*4.5,3,Math.sin(t*0.65)*4.5);
+    lB.position.set(Math.cos(t*0.45+2.1)*4.5,-1,Math.sin(t*0.45+2.1)*4.5);
+    lC.position.set(Math.cos(t*0.30+4.2)*3.5,5,Math.sin(t*0.30+4.2)*3.5);
+    allMats.forEach(m=>{if(m.userData.sh)m.userData.sh.uniforms.uT.value=t});
+    rr.render(rs,rc);
+  })();
+}
+
+/* ══════════════════════════════════════
+   PASSWORD GATE
+══════════════════════════════════════ */
+(function(){
+  const gate=document.getElementById('gate');
+  const input=document.getElementById('gate-input');
+  const btn=document.getElementById('gate-btn');
+  const errMsg=document.getElementById('gate-error');
+  const ANSWERS=['zootopia 2','zootopia2','疯狂动物城2','疯狂动物园2','疯狂动物城 2','疯狂动物园 2'];
+
+  function check(){
+    const val=input.value.trim().toLowerCase().replace(/\s+/g,' ');
+    if(ANSWERS.includes(val)){
+      errMsg.classList.remove('show');
+      gate.style.opacity='0';gate.style.pointerEvents='none';
+      setTimeout(()=>{gate.style.display='none';tl.play()},850);
     } else {
-        document.getElementById('gate-error').classList.add('show');
+      errMsg.classList.add('show');
+      input.style.borderColor='rgba(192,86,122,.7)';
+      input.style.animation='shake .4s ease';
+      setTimeout(()=>{input.style.animation='';input.style.borderColor=''},450);
     }
-};
+  }
+  btn.addEventListener('click',check);
+  btn.addEventListener('touchstart',(e)=>{e.preventDefault();check()},{passive:false});
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
 
-document.getElementById('click-prompt').onclick = () => {
-    const audio = document.getElementById('bgm');
-    audio.volume = 0.4;
-    audio.play();
-    gsap.to('#letter-overlay', {opacity:1, pointerEvents:'auto', duration:1});
-};
-
-document.getElementById('letter-close').onclick = () => {
-    gsap.to('#letter-overlay', {opacity:0, onComplete:()=> {
-        document.getElementById('letter-overlay').style.display='none';
-        gsap.to('#rose-section', {opacity:1, duration:1.5});
-        buildRoseScene();
-    }});
-};
+  const st=document.createElement('style');
+  st.textContent=`@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}`;
+  document.head.appendChild(st);
+})();
 </script>
 </body>
 </html>
