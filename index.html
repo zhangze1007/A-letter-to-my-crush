@@ -132,7 +132,8 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
   <div class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></div>
 </div>
 
-<audio id="bgm" loop><source src="5_6172476352109747894.mp3" type="audio/mpeg"/></audio>
+<audio id="bgm-a" loop><source src="musicB.mp3" type="audio/mpeg"/></audio>
+<audio id="bgm-b" loop><source src="5_6172476352109747894.mp3" type="audio/mpeg"/></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
 <!-- Three.js via ES Module importmap — fixes r158 deprecation warning -->
@@ -237,7 +238,12 @@ function openEnvelope(){
        gsap.to('#letter-scroll',{y:0,scale:1,duration:1.1,ease:'back.out(1.3)',delay:.1});
        gsap.to(envGroup.position,{z:-5,duration:1.2,ease:'power2.in',delay:.2});
        gsap.to(floatGroup,{opacity:.25,duration:1,delay:.3});
-       const bgm=document.getElementById('bgm');bgm.volume=.35;bgm.play().catch(()=>{});
+       const bgmA=document.getElementById('bgm-a');
+       const bgmB=document.getElementById('bgm-b');
+       // Fade out A, fade in B
+       gsap.to(bgmA,{volume:0,duration:1.2,onComplete:()=>bgmA.pause()});
+       bgmB.volume=0; bgmB.play().catch(()=>{});
+       gsap.to(bgmB,{volume:0.35,duration:1.2});
      },1.7);
 }
 
@@ -262,7 +268,7 @@ const closeBtnEl=document.getElementById('letter-close');
 closeBtnEl.addEventListener('touchstart',(e)=>{e.preventDefault();handleClose();},{passive:false});
 closeBtnEl.addEventListener('click',handleClose);
 
-document.addEventListener('click',()=>{const b=document.getElementById('bgm');if(b&&b.paused){b.volume=.35;b.play().catch(()=>{})}},{once:true});
+document.addEventListener('click',()=>{const b=document.getElementById('bgm-a');if(b&&b.paused){b.volume=.35;b.play().catch(()=>{})}},{once:true});
 
 /* ── Rose Scene: PMREMGenerator envmap + crystal material ── */
 function buildRoseScene(){
