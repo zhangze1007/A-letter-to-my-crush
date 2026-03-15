@@ -231,8 +231,8 @@ pinkL.position.x=Math.cos(t*.55)*5;pinkL.position.z=Math.sin(t*.55)*5;
 blueL.position.x=Math.cos(t*.40+2.1)*5;blueL.position.z=Math.sin(t*.40+2.1)*5;
 mainRenderer.render(mainScene,mainCamera)})();
 
-/* GSAP timeline */
-const tl=gsap.timeline();
+/* GSAP timeline — paused until password is correct */
+const tl=gsap.timeline({paused:true});
 tl.to('#p1-ey',{opacity:1,y:0,duration:1.0,ease:'power3.out'},0.3)
   .to('#p1-t', {opacity:1,y:0,duration:1.4,ease:'power3.out'},0.8)
   .to('#p1-s', {opacity:1,y:0,duration:.9,ease:'power2.out'},1.6)
@@ -622,7 +622,10 @@ function buildRoseScene(){
       errMsg.classList.remove('show');
       gate.style.opacity='0';
       gate.style.pointerEvents='none';
-      setTimeout(()=>gate.style.display='none', 850);
+      setTimeout(()=>{
+        gate.style.display='none';
+        tl.play(); // ← start the full experience after gate closes
+      }, 850);
     } else {
       errMsg.classList.add('show');
       input.style.borderColor='rgba(192,86,122,.7)';
