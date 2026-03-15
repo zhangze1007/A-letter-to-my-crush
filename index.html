@@ -117,7 +117,9 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
   <h1 class="p1-title" id="p1-t">For <em>You,</em><br/>Only You.</h1>
   <p class="p1-sub" id="p1-s">有些话，只能用代码才说得出口</p>
   <div class="p1-divider" id="p1-d"></div>
+  <p class="p1-scroll" id="p1-sc">向下探索</p>
 </div>
+<div id="phase2-hint">scroll to reveal · 向下探索</div>
 <div id="click-prompt" role="button" tabindex="0">✦ 点击开启 ✦</div>
 <div id="letter-overlay">
   <div class="letter-scroll" id="letter-scroll">
@@ -235,8 +237,10 @@ tl.to('#p1-ey',{opacity:1,y:0,duration:1.0,ease:'power3.out'},0.3)
   .to('#p1-t', {opacity:1,y:0,duration:1.4,ease:'power3.out'},0.8)
   .to('#p1-s', {opacity:1,y:0,duration:.9,ease:'power2.out'},1.6)
   .to('#p1-d', {height:68,duration:.8,ease:'power2.inOut'},2.2)
+  .to('#p1-sc',{opacity:1,duration:.8},2.8)
   .to(['#p1-ey','#p1-t','#p1-s','#p1-d','#p1-sc'],{y:-80,opacity:0,duration:.9,ease:'power2.in',stagger:.04},3.8)
   .add(()=>{envGroup.visible=true;gsap.fromTo(envGroup.position,{y:14},{y:0,duration:1.4,ease:'back.out(1.15)'})},4.0)
+  .to('#phase2-hint',{opacity:1,duration:.8},5.2)
   .add(()=>{gsap.to(envGroup.rotation,{y:Math.PI*2,duration:3.2,ease:'power1.inOut',onComplete:()=>{envGroup.rotation.y=0;envState='waiting';const cp=document.getElementById('click-prompt');cp.style.pointerEvents='auto';gsap.to(cp,{opacity:1,duration:.8});gsap.to('#phase2-hint',{opacity:0,duration:.5})}})},5.5);
 
 function openEnvelope(){
