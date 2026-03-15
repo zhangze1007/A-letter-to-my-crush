@@ -122,7 +122,6 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
       粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>
       它不问结局，只是静静地，把这份心意<em>如实地交给你</em>。
     </div>
-    <div class="letter-signoff">带着一点紧张，很多真心<br/><span>— 喜欢 Sj 的男孩纸 🌸</span></div>
     <div class="letter-footer-quote">
       粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>
       它不问结局，只是静静地，把这份心意<em>如实地交给你</em>。
@@ -137,7 +136,7 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
   <div class="rose-poem">粉玫瑰，是<em>初恋</em>与<em>温柔爱意</em>的象征<br/>每一片花瓣，都是<em>藏在心里说不出口的话</em></div>
 </div>
 
-<audio id="bgm" loop><source src="5_6172476352109747894.mp3" type="audio/mpeg"/></audio>
+<audio id="bgm" loop><source src="music.mp3" type="audio/mpeg"/></audio>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
 <!-- Three.js via ES Module importmap — fixes r158 deprecation warning -->
@@ -307,12 +306,11 @@ function buildRoseScene(){
   const allMats=[];
   function makeMat(){
     const m=new THREE.MeshPhysicalMaterial({
-      color:       new THREE.Color(0xf0d0dc), // soft pink
+      color:       new THREE.Color(0xEFC0B0), // warm peachy pink (CBCC 0.6YR8/4 series)
       metalness:   1.0,
       roughness:   0.15,
       clearcoat:   1.0,
       clearcoatRoughness: 0.05,
-      // Native iridescence — produces the pink/purple/cyan shimmer in the image
       iridescence: 1.0,
       iridescenceIOR: 1.8,
       iridescenceThicknessRange: [100, 400],
@@ -321,7 +319,7 @@ function buildRoseScene(){
     allMats.push(m); return m;
   }
 
-  // Add candy floaters to rose scene (same style as envelope scene)
+  // Candy floaters — placed on LEFT and RIGHT sides only, not near centre rose
   const roseCandyCols=[0xffb5c8,0xffd6e0,0xb5d8ff,0xd4f0c8,0xffe0b5,0xe8b5ff,0xffefb5];
   function rJellyMat(col){return new THREE.MeshPhysicalMaterial({color:col,metalness:0,roughness:.05,transmission:.75,thickness:.8,ior:1.45,clearcoat:1,clearcoatRoughness:.02,transparent:true,side:THREE.DoubleSide})}
   function rMakeHeart(s,col){const sh=new THREE.Shape();sh.moveTo(0,s*.5);sh.bezierCurveTo(s*.5,s,s,s*.8,s,s*.4);sh.bezierCurveTo(s,0,s*.5,-s*.2,0,-s*.5);sh.bezierCurveTo(-s*.5,-s*.2,-s,0,-s,s*.4);sh.bezierCurveTo(-s,s*.8,-s*.5,s,0,s*.5);const g=new THREE.ExtrudeGeometry(sh,{depth:s*.25,bevelEnabled:true,bevelSize:.04*s,bevelSegments:3});g.center();return new THREE.Mesh(g,rJellyMat(col))}
@@ -329,13 +327,20 @@ function buildRoseScene(){
   function rMakeBox(s,col){const g=new THREE.BoxGeometry(s,s*.7,s*.4);return new THREE.Mesh(g,rJellyMat(col))}
   const rMakers=[(c)=>rMakeHeart(.22,c),(c)=>rMakeStar(.18,c),(c)=>rMakeBox(.28,c),(c)=>rMakeBox(.22,c)];
   const rFloaters=[];
-  for(let i=0;i<24;i++){
+  for(let i=0;i<20;i++){
     const col=roseCandyCols[i%roseCandyCols.length];
     const obj=rMakers[i%rMakers.length](col);
-    const sp=7;
-    obj.position.set((Math.random()-.5)*sp*2,(Math.random()-.5)*sp*1.4,(Math.random()-.5)*3-1);
+    // Place on left side (i<10) or right side (i>=10), x offset at least 3.5 from centre
+    const side = i < 10 ? -1 : 1;
+    const xMin = 3.5, xMax = 6.5;
+    obj.position.set(
+      side * (xMin + Math.random()*(xMax-xMin)),
+      (Math.random()-.5)*7,
+      (Math.random()-.5)*2 - 0.5
+    );
     obj.rotation.set(Math.random()*Math.PI*2,Math.random()*Math.PI*2,Math.random()*Math.PI*2);
-    rFloaters.push({obj,fs:.0004+Math.random()*.0006,fa:.2+Math.random()*.35,fo:Math.random()*Math.PI*2,
+    rFloaters.push({obj,
+      fs:.0004+Math.random()*.0006,fa:.15+Math.random()*.3,fo:Math.random()*Math.PI*2,
       rs:new THREE.Vector3((Math.random()-.5)*.007,(Math.random()-.5)*.009,(Math.random()-.5)*.005),
       baseY:obj.position.y});
     rs.add(obj);
