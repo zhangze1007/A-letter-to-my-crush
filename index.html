@@ -44,9 +44,73 @@ body{font-family:'Cormorant Garamond',serif;background:radial-gradient(ellipse 1
 #rose-three-wrap canvas{width:100%!important;height:100%!important}
 .rose-poem{margin-top:2.2rem;text-align:center;font-style:italic;font-size:clamp(.9rem,2vw,1.08rem);line-height:2.5;color:#a07890;letter-spacing:.06em;max-width:440px}
 .rose-poem em{color:#c05878;font-style:normal}
-</style>
+
+/* ── Password Gate ── */
+#gate{
+  position:fixed;inset:0;z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 130% 110% at 50% 0%,#fff0f5 0%,#fde8f0 22%,#faf0f8 52%,#f5f0ff 78%,#f0f5ff 100%);
+  padding:2rem;text-align:center;
+  transition:opacity .8s ease;
+}
+.gate-petal{font-size:2.2rem;margin-bottom:1.5rem;animation:petalspin 6s linear infinite}
+@keyframes petalspin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.gate-question{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(1.1rem,3vw,1.5rem);
+  color:#9a6080;line-height:1.8;max-width:480px;
+  margin-bottom:.6rem;
+}
+.gate-hint{
+  font-family:'Noto Serif SC',serif;
+  font-size:.78rem;color:#c9a0b8;letter-spacing:.1em;
+  margin-bottom:2rem;
+}
+.gate-input{
+  width:min(340px,85vw);
+  padding:.85rem 1.4rem;
+  border:1.5px solid rgba(210,170,190,.5);
+  border-radius:3px;
+  background:rgba(255,255,255,.7);
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;color:#7a4060;
+  text-align:center;outline:none;
+  transition:border-color .3s,box-shadow .3s;
+}
+.gate-input:focus{
+  border-color:rgba(192,86,122,.5);
+  box-shadow:0 0 0 3px rgba(192,86,122,.08);
+}
+.gate-input::placeholder{color:#d4b0c4;font-style:italic}
+.gate-btn{
+  display:block;margin:1.2rem auto 0;
+  padding:.7rem 2.8rem;
+  background:rgba(240,200,220,.25);
+  border:1px solid rgba(210,170,190,.5);
+  border-radius:3px;cursor:pointer;
+  font-family:'Cormorant Garamond',serif;
+  font-size:.82rem;letter-spacing:.3em;text-transform:uppercase;
+  color:#a07090;transition:all .3s;
+}
+.gate-btn:hover{background:rgba(240,200,220,.5);color:#7a4060}
+.gate-error{
+  margin-top:1rem;font-style:italic;
+  font-size:.88rem;color:#c05878;
+  opacity:0;transition:opacity .4s;height:1.2em;
+}
+.gate-error.show{opacity:1}</style>
 </head>
 <body>
+
+<!-- ── Password Gate ── -->
+<div id="gate">
+  <div class="gate-petal">🌸</div>
+  <p class="gate-question">你还记得我第一次约你出来<br/>一起看的电影叫什么名字吗？</p>
+  <p class="gate-hint">只有你知道答案 · Only you would know</p>
+  <input class="gate-input" id="gate-input" type="text" placeholder="在这里输入…" autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <button class="gate-btn" id="gate-btn">进入 · Enter</button>
+  <p class="gate-error" id="gate-error">答案不对哦，再想想 🌸</p>
+</div>
 <canvas id="three-canvas"></canvas>
 <div id="phase1">
   <p class="p1-eyebrow" id="p1-ey">一封写给你的信 · A letter for you</p>
@@ -200,6 +264,10 @@ function openEnvelope(){
 }
 document.getElementById('click-prompt').addEventListener('click',openEnvelope);
 document.getElementById('letter-close').addEventListener('click',()=>{
+  // Permanently hide click-prompt so it never reappears on rose page
+  const cp=document.getElementById('click-prompt');
+  cp.style.cssText='display:none!important';
+  document.getElementById('phase2-hint').style.display='none';
   const lo=document.getElementById('letter-overlay');
   gsap.to(lo,{opacity:0,duration:.9,ease:'power2.in',onComplete:()=>{lo.classList.remove('active');lo.style.display='none';envGroup.visible=false}});
   gsap.to(floatGroup,{opacity:0,duration:.8});
@@ -537,6 +605,38 @@ function buildRoseScene(){
     rr.render(rs,rc);
   })();
 }
+
+/* ── Password Gate Logic ── */
+(function(){
+  const gate   = document.getElementById('gate');
+  const input  = document.getElementById('gate-input');
+  const btn    = document.getElementById('gate-btn');
+  const errMsg = document.getElementById('gate-error');
+
+  // Accepted answers — case insensitive, flexible spacing
+  const ANSWERS = ['zootopia 2','zootopia2','疯狂动物城2','疯狂动物园2','疯狂动物城 2','疯狂动物园 2'];
+
+  function check(){
+    const val = input.value.trim().toLowerCase().replace(/\s+/g,' ');
+    if(ANSWERS.includes(val)){
+      errMsg.classList.remove('show');
+      gate.style.opacity='0';
+      gate.style.pointerEvents='none';
+      setTimeout(()=>gate.style.display='none', 850);
+    } else {
+      errMsg.classList.add('show');
+      input.style.borderColor='rgba(192,86,122,.7)';
+      input.style.animation='shake .4s ease';
+      setTimeout(()=>{input.style.animation='';input.style.borderColor=''},450);
+    }
+  }
+  btn.addEventListener('click', check);
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+
+  const st=document.createElement('style');
+  st.textContent=`@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}`;
+  document.head.appendChild(st);
+})();
 </script>
 </body>
 </html>
