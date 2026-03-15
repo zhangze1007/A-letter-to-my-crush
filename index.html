@@ -413,36 +413,23 @@ function buildRoseScene(){
     (err)=>{ loadDiv.textContent='无法加载 rose.glb 😢'; console.error('GLTFLoader error',err); }
   );
 
-  /* Render loop — frame-rate independent lerp, no shadow overhead */
-  let lastTS = performance.now();
-  let totalTime = 0;
-  let currentRotY = 0;
-  let targetRotY  = 0;
-  const ROT_SPEED = 0.28;
+  /* Render loop — pure time-based, zero lerp, zero accumulation = silkiest */
+  const startTS = performance.now();
 
   (function loop(){
     requestAnimationFrame(loop);
-    const now = performance.now();
-    let delta = (now - lastTS) / 1000;
-    lastTS = now;
-    if(delta > 0.05) delta = 0.05; // spike cap
+    const t = (performance.now() - startTS) * 0.001; // seconds, never drifts
 
-    totalTime += delta;
-    const t = totalTime;
-
-    // Frame-rate independent lerp: same feel at 30fps and 60fps
-    targetRotY += ROT_SPEED * delta;
-    const alpha = 1 - Math.pow(0.92, delta * 60); // ~8% per frame at 60fps
-    currentRotY += (targetRotY - currentRotY) * alpha;
-    rg.rotation.y = currentRotY;
-
+    // Direct assignment — no lerp, no delta, no accumulation
+    // rotation.y is always exactly where it should be for this moment in time
+    rg.rotation.y = t * 0.30;
     rg.scale.setScalar(1 + 0.008 * Math.sin(t * 1.1));
 
     rFloaters.forEach(f=>{
       f.obj.position.y = f.baseY + Math.sin(t * f.fs * 60 + f.fo) * f.fa;
-      f.obj.rotation.x += f.rs.x * delta * 60;
-      f.obj.rotation.y += f.rs.y * delta * 60;
-      f.obj.rotation.z += f.rs.z * delta * 60;
+      f.obj.rotation.x = f.rs.x * t * 60;
+      f.obj.rotation.y = f.rs.y * t * 60;
+      f.obj.rotation.z = f.rs.z * t * 60;
     });
 
     lA.position.set(Math.cos(t*0.65)*4, 3,  Math.sin(t*0.65)*4);
