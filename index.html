@@ -278,8 +278,8 @@ document.addEventListener('click',()=>{const b=document.getElementById('bgm');if
 
 
 /* ══════════════════════════════════════════════════
-   ROSE SCENE — 1:1 recreation of reference image
-   Crystal/glass material, heart-stem, no spiral
+   ROSE SCENE — loads rose.glb, applies crystal material
+   Falls back to procedural rose if file not found
 ══════════════════════════════════════════════════ */
 function buildRoseScene(){
   const wrap=document.getElementById('rose-three-wrap');
@@ -290,320 +290,185 @@ function buildRoseScene(){
   rr.setSize(W,H); rr.setPixelRatio(Math.min(devicePixelRatio,2));
   rr.setClearColor(0,0);
   rr.shadowMap.enabled=true; rr.shadowMap.type=THREE.PCFSoftShadowMap;
-  rr.toneMapping=THREE.ACESFilmicToneMapping; rr.toneMappingExposure=1.6;
+  rr.toneMapping=THREE.ACESFilmicToneMapping; rr.toneMappingExposure=1.8;
   wrap.appendChild(rr.domElement);
 
   const rs=new THREE.Scene();
-  const rc=new THREE.PerspectiveCamera(36, W/H, 0.1, 100);
-  rc.position.set(0, 1.8, 8.5); rc.lookAt(0, 0.2, 0);
+  const rc=new THREE.PerspectiveCamera(36,W/H,0.1,100);
+  rc.position.set(0,1.8,8.5); rc.lookAt(0,0.2,0);
 
-  /* ── Lighting for crystal look ──
-     Multiple colored point lights create the iridescent shimmer */
-  rs.add(new THREE.AmbientLight(0xffeeff, 0.7));
+  /* ── Lights ── */
+  rs.add(new THREE.AmbientLight(0xffeeff,0.7));
+  const kl=new THREE.DirectionalLight(0xffffff,5.0); kl.position.set(4,10,6); kl.castShadow=true; kl.shadow.mapSize.set(2048,2048); rs.add(kl);
+  const fl=new THREE.DirectionalLight(0xfff0f8,2.0); fl.position.set(-4,3,5); rs.add(fl);
+  const bl=new THREE.DirectionalLight(0xffffff,3.5); bl.position.set(0,5,-8); rs.add(bl);
+  const lA=new THREE.PointLight(0xff88bb,5.5,20); lA.position.set(-3,4,3); rs.add(lA);
+  const lB=new THREE.PointLight(0x88bbff,4.5,18); lB.position.set(3,-1,-3); rs.add(lB);
+  const lC=new THREE.PointLight(0xbbff88,3.0,14); lC.position.set(0,6,-4); rs.add(lC);
 
-  // Key light — top right, strong
-  const kl=new THREE.DirectionalLight(0xffffff, 5.0);
-  kl.position.set(4, 10, 6); kl.castShadow=true;
-  kl.shadow.mapSize.set(2048,2048); rs.add(kl);
-
-  // Soft fill from left
-  const fl=new THREE.DirectionalLight(0xfff0f8, 2.0);
-  fl.position.set(-5, 3, 4); rs.add(fl);
-
-  // Backlight (creates the glowing edge in the image)
-  const bl=new THREE.DirectionalLight(0xffffff, 3.5);
-  bl.position.set(0, 5, -8); rs.add(bl);
-
-  // Orbiting color lights for iridescence
-  const lA=new THREE.PointLight(0xff88bb, 5.0, 18); lA.position.set(-3,4,3); rs.add(lA);
-  const lB=new THREE.PointLight(0x88bbff, 4.0, 15); lB.position.set(3,-1,-3); rs.add(lB);
-  const lC=new THREE.PointLight(0xbbff88, 2.5, 12); lC.position.set(0,6,-4); rs.add(lC);
-
-  /* ── CRYSTAL material (NOT metallic) ──
-     Like the image: smooth glass/crystal with rainbow shimmer */
+  /* ── Crystal iridescent material ── */
+  const allMats=[];
   function crystalMat(baseHex){
     const m=new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(baseHex),
-      metalness: 0.0,          // zero metal — pure crystal
-      roughness: 0.03,         // very smooth surface
-      transmission: 0.15,      // slight glass transparency
-      thickness: 0.8,
-      ior: 1.65,               // crystal refractive index
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.02,
-      sheen: 1.0,
-      sheenColor: new THREE.Color(0xffd8f0),
-      sheenRoughness: 0.08,
-      side: THREE.DoubleSide,
+      color:new THREE.Color(baseHex),
+      metalness:0.0, roughness:0.03,
+      transmission:0.15, thickness:0.8, ior:1.65,
+      clearcoat:1.0, clearcoatRoughness:0.02,
+      sheen:1.0, sheenColor:new THREE.Color(0xffd8f0), sheenRoughness:0.08,
+      side:THREE.DoubleSide,
     });
-    // Custom iridescence shader — rainbow rim effect like image
-    m.onBeforeCompile = shader => {
-      shader.uniforms.uT = {value:0};
-      m.userData.sh = shader;
-      shader.fragmentShader = `uniform float uT;\n` + shader.fragmentShader;
-      shader.fragmentShader = shader.fragmentShader.replace(
-        '#include <color_fragment>',`
+    m.onBeforeCompile=shader=>{
+      shader.uniforms.uT={value:0}; m.userData.sh=shader;
+      shader.fragmentShader=`uniform float uT;\n`+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`
         #include <color_fragment>
-        vec3 vN = normalize(vNormal);
-        vec3 vV = normalize(cameraPosition - vViewPosition);
-        float rim = clamp(1.0 - abs(dot(vN, vV)), 0.0, 1.0);
-        float phase = rim * 7.5 + uT * 0.6;
-        // Rainbow: pink-green-blue-pink cycle like in image
-        vec3 rainbow = vec3(
-          0.55 + 0.45*sin(phase + 0.0),
-          0.55 + 0.45*sin(phase + 2.094),
-          0.60 + 0.40*sin(phase + 4.189)
-        );
-        // Stronger rim glow (bright white edge like the image)
-        float rimGlow = pow(rim, 1.8);
-        diffuseColor.rgb = mix(diffuseColor.rgb, rainbow, rimGlow * 0.70);
-        diffuseColor.rgb += vec3(rimGlow * 0.35); // bright white edge
-        `);
+        vec3 vN=normalize(vNormal);
+        vec3 vV=normalize(cameraPosition-vViewPosition);
+        float rim=clamp(1.0-abs(dot(vN,vV)),0.0,1.0);
+        float phase=rim*7.5+uT*0.6;
+        vec3 rainbow=vec3(0.55+0.45*sin(phase),0.55+0.45*sin(phase+2.094),0.60+0.40*sin(phase+4.189));
+        float rimGlow=pow(rim,1.8);
+        diffuseColor.rgb=mix(diffuseColor.rgb,rainbow,rimGlow*0.70);
+        diffuseColor.rgb+=vec3(rimGlow*0.35);
+      `);
     };
-    return m;
+    allMats.push(m); return m;
   }
 
-  const pMat = crystalMat(0xf2d4e0); // soft pink crystal petals
-  const sMat = crystalMat(0xe8c8d8); // slightly darker for stem/leaves
-  const allMats = [pMat, sMat];
+  const rg=new THREE.Group(); rs.add(rg);
+  let modelLoaded=false;
 
-  const rg = new THREE.Group(); rs.add(rg);
+  /* ── Loading indicator ── */
+  const loadDiv=document.createElement('div');
+  loadDiv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Cormorant Garamond",serif;font-style:italic;color:#c9a0b8;font-size:1rem;letter-spacing:.2em;pointer-events:none';
+  loadDiv.textContent='Loading 🌹';
+  wrap.style.position='relative';
+  wrap.appendChild(loadDiv);
 
-  /* ══════════════════════════════════
-     PETAL GEOMETRY
-     Smooth, flowing crystal petals
-     matching the image's soft curves
-  ══════════════════════════════════ */
-  function petalGeo(len, wid, cupDepth, tipBackCurl, edgeUndulation){
-    const US=28, VS=22;
-    const pos=[], nrm=[], uv=[], idx=[];
+  /* ── Load GLTFLoader from CDN, then load rose.glb ── */
+  const loaderScript=document.createElement('script');
+  loaderScript.src='https://unpkg.com/three@0.158.0/examples/js/loaders/GLTFLoader.js';
+  loaderScript.onload=()=>{
+    const loader=new THREE.GLTFLoader();
+    loader.load(
+      'rose.glb',
+      (gltf)=>{
+        // ✅ GLB loaded — apply crystal material to every mesh
+        loadDiv.remove();
+        modelLoaded=true;
+        const model=gltf.scene;
 
-    for(let vi=0; vi<=VS; vi++){
-      for(let ui=0; ui<=US; ui++){
-        const u = ui/US; // 0=base, 1=tip
-        const v = (vi/VS)*2 - 1; // -1..1 across width
+        // Auto-scale and center the model
+        const box=new THREE.Box3().setFromObject(model);
+        const size=box.getSize(new THREE.Vector3());
+        const maxDim=Math.max(size.x,size.y,size.z);
+        const targetSize=4.5;
+        model.scale.setScalar(targetSize/maxDim);
 
-        // === Width profile ===
-        // Sharp narrow base, widest ~40%, tapers to soft pointed tip
-        const wProfile = Math.pow(Math.sin(u * Math.PI), 0.60) * (1 - 0.15*v*v);
-        const x = v * wid * wProfile;
-        const y = u * len;
+        // Re-center after scale
+        const box2=new THREE.Box3().setFromObject(model);
+        const center=box2.getCenter(new THREE.Vector3());
+        model.position.sub(center);
+        model.position.y+=0.3;
 
-        // === Z depth (the 3D curvature) ===
-        // 1) Bowl cup: petals curve inward from center to edges
-        const zCup = v*v * cupDepth * Math.pow(Math.sin(u*Math.PI*0.92), 0.9);
-        // 2) Tip back-curl: top of petal curves back (like real rose)
-        const curlT = Math.max(0, (u - 0.58)/(1-0.58));
-        const zCurl = Math.pow(curlT, 2.2) * tipBackCurl * len * 0.48;
-        // 3) Gentle undulation along edges for organic feel (subtle!)
-        const zWave = Math.sin(v*Math.PI*2.8 + u*8) * edgeUndulation * Math.pow(Math.sin(u*Math.PI),0.6) * Math.abs(v);
-        // 4) Central spine ridge
-        const zSpine = Math.exp(-v*v*28) * 0.032 * len * u;
-        // 5) Subtle lateral concavity
-        const zLat = -Math.sin(Math.abs(v)*Math.PI) * 0.018 * len * u;
+        // Apply crystal material to all meshes
+        model.traverse(child=>{
+          if(child.isMesh){
+            // Keep geometry, replace material
+            child.material=crystalMat(0xf2d4e0);
+            child.castShadow=true;
+            child.receiveShadow=true;
+          }
+        });
 
-        pos.push(x, y, zCup + zCurl + zWave + zSpine + zLat);
-        nrm.push(0,0,1);
-        uv.push(u, (v+1)*0.5);
+        rg.add(model);
+      },
+      (xhr)=>{
+        // Loading progress
+        if(xhr.total>0){
+          const pct=Math.round(xhr.loaded/xhr.total*100);
+          loadDiv.textContent=`Loading ${pct}% 🌹`;
+        }
+      },
+      (err)=>{
+        // ❌ rose.glb not found — fall back to procedural rose
+        console.warn('rose.glb not found, using procedural rose');
+        loadDiv.remove();
+        buildProceduralRose(rg,crystalMat);
       }
-    }
-    for(let vi=0;vi<VS;vi++){
-      for(let ui=0;ui<US;ui++){
-        const a=vi*(US+1)+ui, b=a+1, c=a+(US+1), d=c+1;
-        idx.push(a,b,d, a,d,c);
-      }
-    }
-    const g=new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
-    g.setAttribute('normal',   new THREE.Float32BufferAttribute(nrm,3));
-    g.setAttribute('uv',       new THREE.Float32BufferAttribute(uv,2));
-    g.setIndex(idx); g.computeVertexNormals();
-    return g;
-  }
-
-  /* ══ ROSE LAYERS ══
-     9 rings of petals from the reference image
-     Outer petals: open wide; inner: tightly cupped
-     [count, len, wid, cupDepth, tipCurl, edgeWave, yOff, radOff, xRot, zRotVariance] */
-  const LAYERS = [
-    // Outermost — fully open, drooping  
-    [9,  1.12, 0.48, 0.34, 0.40, 0.028, -0.18, 0.30, -0.52, 0.10],
-    [8,  0.98, 0.42, 0.40, 0.50, 0.024,  0.06, 0.22, -0.35, 0.09],
-    [7,  0.84, 0.36, 0.45, 0.58, 0.020,  0.24, 0.15, -0.21, 0.08],
-    [7,  0.72, 0.30, 0.50, 0.65, 0.016,  0.40, 0.10, -0.10, 0.07],
-    [6,  0.60, 0.24, 0.54, 0.72, 0.013,  0.53, 0.06, -0.01, 0.06],
-    [5,  0.48, 0.19, 0.57, 0.79, 0.010,  0.63, 0.04,  0.07, 0.05],
-    [5,  0.37, 0.14, 0.60, 0.85, 0.008,  0.72, 0.02,  0.14, 0.04],
-    [4,  0.26, 0.10, 0.62, 0.91, 0.005,  0.79, 0.01,  0.20, 0.03],
-    [3,  0.16, 0.07, 0.64, 0.96, 0.003,  0.84, 0.00,  0.25, 0.02],
-  ];
-
-  const PHI = 2.39996; // golden angle
-  LAYERS.forEach(([cnt,L,W,cup,curl,wave,yOff,rad,xRot,zVar],li)=>{
-    for(let i=0;i<cnt;i++){
-      const angle = (i/cnt)*Math.PI*2 + li*PHI*0.22;
-      const geo = petalGeo(L, W, cup, curl, wave);
-      const mesh = new THREE.Mesh(geo, pMat);
-      mesh.rotation.y = angle;
-      mesh.rotation.x = xRot - Math.random()*0.06;
-      mesh.rotation.z = (Math.random()-0.5)*zVar*2;
-      mesh.position.set(Math.cos(angle)*rad, yOff, Math.sin(angle)*rad);
-      mesh.castShadow=true;
-      rg.add(mesh);
-    }
-  });
-
-  // Sepals at base
-  for(let i=0;i<5;i++){
-    const a=(i/5)*Math.PI*2 + Math.PI/10;
-    const geo=petalGeo(0.48, 0.13, 0.10, 0.05, 0.008);
-    const m=new THREE.Mesh(geo, sMat);
-    m.rotation.y=a; m.rotation.x=-0.72;
-    m.position.set(Math.cos(a)*0.16, -0.36, Math.sin(a)*0.16);
-    rg.add(m);
-  }
-
-  // Small receptacle ball connecting flower to stem
-  rg.add(new THREE.Mesh(new THREE.SphereGeometry(0.12,16,12), sMat));
-
-  /* ══ STEM — heart-shape curve (matching image exactly) ══
-     Straight upper stem → curves into heart loop → tail */
-  class RoseStem extends THREE.Curve {
-    getPoint(t){
-      if(t < 0.22){
-        // Straight stem (slight S-lean) going down from flower
-        const s=t/0.22;
-        return new THREE.Vector3(s*0.05, -s*1.6, 0);
-      } else if(t < 0.58){
-        // Right lobe of heart
-        const s=(t-0.22)/0.36;
-        const a=-Math.PI/2 + s*Math.PI;
-        return new THREE.Vector3(0.58+Math.cos(a)*0.56, -1.6-Math.sin(a)*0.44, 0);
-      } else if(t < 0.88){
-        // Left lobe of heart
-        const s=(t-0.58)/0.30;
-        const a=Math.PI/2 - s*Math.PI;
-        return new THREE.Vector3(-0.58+Math.cos(a)*0.56, -1.6-Math.sin(a)*0.44, 0);
-      } else {
-        // Short tail going straight down
-        const s=(t-0.88)/0.12;
-        return new THREE.Vector3(0, -1.6-s*1.0, 0);
-      }
-    }
-  }
-  const stemCurve = new RoseStem();
-
-  // Plain tube stem — NO spiral, clean like image
-  rg.add(new THREE.Mesh(
-    new THREE.TubeGeometry(stemCurve, 200, 0.044, 10, false),
-    sMat
-  ));
-
-  /* ══ LEAVES — simple single leaves like image 2 ══
-     Not compound. Individual oval leaves at various stem points. */
-  function simpleLeafGeo(sc){
-    // Simple pointed oval
-    const sh=new THREE.Shape();
-    sh.moveTo(0,0);
-    sh.bezierCurveTo(-sc*0.28, sc*0.18, -sc*0.32, sc*0.42, 0, sc*0.62);
-    sh.bezierCurveTo( sc*0.32, sc*0.42,  sc*0.28, sc*0.18, 0, 0);
-
-    const g=new THREE.ShapeGeometry(sh, 14);
-    const p=g.attributes.position;
-    for(let i=0;i<p.count;i++){
-      const yv=p.getY(i)/(sc*0.62);
-      const xv=p.getX(i)/(sc*0.30+0.001);
-      // Dish + midrib + lateral veins
-      const dish   = Math.sin(Math.max(0,yv)*Math.PI)*0.060*sc;
-      const midrib = Math.exp(-xv*xv*18)*0.040*sc*Math.sin(yv*Math.PI);
-      const vein   = Math.sin(Math.abs(xv)*Math.PI*1.6)*0.014*sc*Math.sin(yv*Math.PI);
-      p.setZ(i, dish+midrib+vein);
-    }
-    g.computeVertexNormals(); return g;
-  }
-
-  // Leaves placed along upper straight part (like image)
-  const leafData = [
-    // On straight stem — two leaves at top like image 2
-    {t:0.06, sc:1.8, ry: 0.55, rz:-0.62, rx:0.22},
-    {t:0.10, sc:1.6, ry:-0.50, rz: 0.68, rx:0.25},
-    {t:0.14, sc:2.0, ry: 0.48, rz:-0.60, rx:0.20},
-    {t:0.18, sc:1.7, ry:-0.44, rz: 0.64, rx:0.23},
-    // On heart loop — scattered leaves like image 2
-    {t:0.38, sc:1.2, ry: 0.30, rz:-0.50, rx:0.18},
-    {t:0.48, sc:1.0, ry:-0.28, rz: 0.55, rx:0.20},
-    {t:0.60, sc:0.9, ry: 0.25, rz:-0.45, rx:0.22},
-    {t:0.70, sc:0.85,ry:-0.22, rz: 0.48, rx:0.20},
-    {t:0.78, sc:0.8, ry: 0.20, rz:-0.42, rx:0.18},
-  ];
-
-  leafData.forEach(({t,sc,ry,rz,rx})=>{
-    const pos = stemCurve.getPoint(t);
-    const m = new THREE.Mesh(simpleLeafGeo(sc), sMat.clone());
-    m.position.copy(pos);
-    m.rotation.set(rx + (Math.random()-0.5)*0.08, ry+(Math.random()-0.5)*0.10, rz+(Math.random()-0.5)*0.08);
-    m.castShadow=true;
-    rg.add(m);
-  });
-
-  /* ══ THORNS — like image 2: large, prominent, along whole stem ══ */
-  // Thorn at a given t along stem curve
-  function addThorn(t, side, size){
-    const pos = stemCurve.getPoint(t);
-    const posNext = stemCurve.getPoint(Math.min(t+0.01,1));
-    // Stem direction
-    const dir = new THREE.Vector3().subVectors(posNext, pos).normalize();
-    // Perpendicular (rotate dir 90 around z for side offset)
-    const perp = new THREE.Vector3(-dir.y, dir.x, 0).normalize();
-
-    const thornLen = size * (0.14 + Math.random()*0.08);
-    const thornBase = size * 0.026;
-
-    const g = new THREE.ConeGeometry(thornBase, thornLen, 5, 1);
-    // Shift so base is at origin
-    g.translate(0, thornLen/2, 0);
-
-    const m = new THREE.Mesh(g, sMat);
-    m.position.copy(pos).addScaledVector(perp, side*0.055);
-
-    // Point thorn outward and slightly backward
-    const thornDir = new THREE.Vector3(perp.x*side, perp.y*side, 0.1).normalize();
-    m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), thornDir);
-    rg.add(m);
-  }
-
-  // Dense thorns along straight stem
-  for(let i=0;i<14;i++){
-    const t=0.02+i*0.015;
-    addThorn(t, i%2===0?1:-1, 1.0);
-  }
-  // Thorns along heart loop
-  for(let i=0;i<28;i++){
-    const t=0.24+i*(0.62/28);
-    addThorn(t, i%2===0?1:-1, 0.85);
-  }
-  // Thorns on tail
-  for(let i=0;i<6;i++){
-    addThorn(0.88+i*0.02, i%2===0?1:-1, 0.75);
-  }
-
-  rg.position.set(0, 1.15, 0);
-  rg.rotation.y = 0.3; // slight initial angle to show heart shape better
+    );
+  };
+  loaderScript.onerror=()=>{
+    loadDiv.remove();
+    buildProceduralRose(rg,crystalMat);
+  };
+  document.head.appendChild(loaderScript);
 
   /* ── Render loop ── */
   let rf=0;
   (function rLoop(){
     requestAnimationFrame(rLoop); rf++;
-    const t = rf*0.016;
-    rg.rotation.y = 0.3 + rf*0.007;
-    rg.scale.setScalar(1 + 0.010*Math.sin(rf*0.022));
-    // Orbit lights for shifting iridescence
+    const t=rf*0.016;
+    rg.rotation.y=0.3+rf*0.007;
+    rg.scale.setScalar(1+0.010*Math.sin(rf*0.022));
     lA.position.x=Math.cos(t*0.65)*4.5; lA.position.z=Math.sin(t*0.65)*4.5;
     lB.position.x=Math.cos(t*0.45+2.1)*4.5; lB.position.z=Math.sin(t*0.45+2.1)*4.5;
     lC.position.x=Math.cos(t*0.30+4.2)*3.5; lC.position.z=Math.sin(t*0.30+4.2)*3.5;
-    allMats.forEach(m=>{if(m.userData.sh) m.userData.sh.uniforms.uT.value=t});
+    allMats.forEach(m=>{if(m.userData.sh)m.userData.sh.uniforms.uT.value=t});
     rr.render(rs,rc);
   })();
+}
+
+/* ── Fallback procedural rose (if rose.glb missing) ── */
+function buildProceduralRose(rg, crystalMat){
+  const pMat=crystalMat(0xf2d4e0);
+  const sMat=crystalMat(0xe8c8d8);
+
+  function petalGeo(L,W,cup,tipCurl,ruffle){
+    const US=26,VS=20; const pos=[],nrm=[],uv=[],idx=[];
+    for(let vi=0;vi<=VS;vi++){for(let ui=0;ui<=US;ui++){
+      const u=ui/US,v=(vi/VS)*2-1;
+      const wP=Math.pow(Math.sin(u*Math.PI),0.68)*(1-0.22*v*v);
+      const x=v*W*wP*2,y=u*L;
+      const zCup=v*v*cup*Math.pow(Math.sin(u*Math.PI*0.88),0.9);
+      const curlT=Math.max(0,(u-0.58)/(1-0.58));
+      const zCurl=Math.pow(curlT,2.2)*tipCurl*L*0.48;
+      const zWave=Math.sin(v*Math.PI*2.8+u*8)*ruffle*Math.pow(Math.sin(u*Math.PI),0.6)*Math.abs(v);
+      const zSpine=Math.exp(-v*v*28)*0.032*L*u;
+      pos.push(x,y,zCup+zCurl+zWave+zSpine); nrm.push(0,0,1); uv.push(u,(v+1)*0.5);
+    }}
+    for(let vi=0;vi<VS;vi++){for(let ui=0;ui<US;ui++){
+      const a=vi*(US+1)+ui,b=a+1,c=a+(US+1),d=c+1; idx.push(a,b,d,a,d,c);
+    }}
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+    g.setAttribute('normal',new THREE.Float32BufferAttribute(nrm,3));
+    g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+    g.setIndex(idx); g.computeVertexNormals(); return g;
+  }
+
+  const LAYERS=[[9,1.12,0.48,0.34,0.40,0.028,-0.18,0.30,-0.52,0.10],[8,0.98,0.42,0.40,0.50,0.024,0.06,0.22,-0.35,0.09],[7,0.84,0.36,0.45,0.58,0.020,0.24,0.15,-0.21,0.08],[7,0.72,0.30,0.50,0.65,0.016,0.40,0.10,-0.10,0.07],[6,0.60,0.24,0.54,0.72,0.013,0.53,0.06,-0.01,0.06],[5,0.48,0.19,0.57,0.79,0.010,0.63,0.04,0.07,0.05],[5,0.37,0.14,0.60,0.85,0.008,0.72,0.02,0.14,0.04],[4,0.26,0.10,0.62,0.91,0.005,0.79,0.01,0.20,0.03],[3,0.16,0.07,0.64,0.96,0.003,0.84,0.00,0.25,0.02]];
+  const PHI=2.39996;
+  LAYERS.forEach(([cnt,L,W,cup,curl,wave,yOff,rad,xRot,zVar],li)=>{
+    for(let i=0;i<cnt;i++){
+      const angle=(i/cnt)*Math.PI*2+li*PHI*0.22;
+      const mesh=new THREE.Mesh(petalGeo(L,W,cup,curl,wave),pMat);
+      mesh.rotation.y=angle; mesh.rotation.x=xRot-Math.random()*0.06;
+      mesh.rotation.z=(Math.random()-0.5)*zVar*2;
+      mesh.position.set(Math.cos(angle)*rad,yOff,Math.sin(angle)*rad);
+      rg.add(mesh);
+    }
+  });
+  for(let i=0;i<5;i++){
+    const a=(i/5)*Math.PI*2+Math.PI/10;
+    const m=new THREE.Mesh(petalGeo(0.48,0.13,0.10,0.05,0.008),sMat);
+    m.rotation.y=a; m.rotation.x=-0.72;
+    m.position.set(Math.cos(a)*0.16,-0.36,Math.sin(a)*0.16); rg.add(m);
+  }
+  class HeartStem extends THREE.Curve{getPoint(t){if(t<0.22){const s=t/0.22;return new THREE.Vector3(s*0.05,-s*1.6,0)}else if(t<0.58){const s=(t-0.22)/0.36,a=-Math.PI/2+s*Math.PI;return new THREE.Vector3(0.58+Math.cos(a)*0.56,-1.6-Math.sin(a)*0.44,0)}else if(t<0.88){const s=(t-0.58)/0.30,a=Math.PI/2-s*Math.PI;return new THREE.Vector3(-0.58+Math.cos(a)*0.56,-1.6-Math.sin(a)*0.44,0)}else{const s=(t-0.88)/0.12;return new THREE.Vector3(0,-1.6-s*1.0,0)}}}
+  const stemCurve=new HeartStem();
+  rg.add(new THREE.Mesh(new THREE.TubeGeometry(stemCurve,200,0.044,10,false),sMat));
+  rg.position.set(0,1.15,0);
 }
 
 /* ── Password Gate Logic ── */
