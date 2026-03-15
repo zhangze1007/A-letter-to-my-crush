@@ -272,12 +272,12 @@ function buildRoseScene(){
   const W=wrap.clientWidth||Math.min(400,window.innerWidth-40);
   const H=wrap.clientHeight||Math.min(520,window.innerHeight*0.75);
 
-  const rr=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  rr.setSize(W,H); rr.setPixelRatio(Math.min(devicePixelRatio,2));
+  const rr=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
+  rr.setSize(W,H); rr.setPixelRatio(Math.min(devicePixelRatio,1.5)); // lower DPR = less GPU load
   rr.setClearColor(0x000000,0);
   rr.toneMapping=THREE.ACESFilmicToneMapping;
   rr.toneMappingExposure=1.4;
-  rr.shadowMap.enabled=true;
+  rr.shadowMap.enabled=false; // shadows cause GPU stutter on mobile — off
   rr.domElement.style.width='100%'; rr.domElement.style.height='100%';
   wrap.style.position='relative'; wrap.appendChild(rr.domElement);
 
@@ -413,31 +413,31 @@ function buildRoseScene(){
     (err)=>{ loadDiv.textContent='无法加载 rose.glb 😢'; console.error('GLTFLoader error',err); }
   );
 
-  /* Render loop — lerp smoothing + delta cap for buttery rotation */
-  const clock = new THREE.Clock();
+  /* Render loop — frame-rate independent lerp, no shadow overhead */
+  let lastTS = performance.now();
   let totalTime = 0;
-  let currentRotY = 0;   // actual displayed rotation
-  let targetRotY  = 0;   // where we want to be
-  const ROT_SPEED  = 0.28;  // rad/s — gentle pace
-  const LERP_ALPHA = 0.06;  // smoothing factor: lower = silkier
+  let currentRotY = 0;
+  let targetRotY  = 0;
+  const ROT_SPEED = 0.28;
 
   (function loop(){
     requestAnimationFrame(loop);
-    let delta = clock.getDelta();
-    // Cap delta so a tab-switch/lag spike doesn't cause a jump
-    if(delta > 0.05) delta = 0.05;
+    const now = performance.now();
+    let delta = (now - lastTS) / 1000;
+    lastTS = now;
+    if(delta > 0.05) delta = 0.05; // spike cap
+
     totalTime += delta;
     const t = totalTime;
 
-    // Advance target, then lerp current toward target
+    // Frame-rate independent lerp: same feel at 30fps and 60fps
     targetRotY += ROT_SPEED * delta;
-    currentRotY += (targetRotY - currentRotY) * LERP_ALPHA;
+    const alpha = 1 - Math.pow(0.92, delta * 60); // ~8% per frame at 60fps
+    currentRotY += (targetRotY - currentRotY) * alpha;
     rg.rotation.y = currentRotY;
 
-    // Gentle breathing scale
     rg.scale.setScalar(1 + 0.008 * Math.sin(t * 1.1));
 
-    // Floaters — delta-based rotation so they're smooth too
     rFloaters.forEach(f=>{
       f.obj.position.y = f.baseY + Math.sin(t * f.fs * 60 + f.fo) * f.fa;
       f.obj.rotation.x += f.rs.x * delta * 60;
@@ -445,7 +445,6 @@ function buildRoseScene(){
       f.obj.rotation.z += f.rs.z * delta * 60;
     });
 
-    // Orbit lights
     lA.position.set(Math.cos(t*0.65)*4, 3,  Math.sin(t*0.65)*4);
     lB.position.set(Math.cos(t*0.45+2.1)*4, -1, Math.sin(t*0.45+2.1)*4);
     lC.position.set(Math.cos(t*0.30+4.2)*3,  4,  Math.sin(t*0.30+4.2)*3);
